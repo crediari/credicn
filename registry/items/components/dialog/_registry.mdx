@@ -2,13 +2,18 @@
 name: dialog
 type: registry:ui
 title: Dialog
-description: Modal dialog with overlay, header, and footer.
+description: Modal dialog with a Windows-safe dark overlay, header, and footer.
 dependencies:
   - "@base-ui/react"
   - lucide-react
+registryDependencies:
+  - button
 ---
 
 Open a focused modal for confirmations, forms, and short tasks.
+
+The overlay uses a solid translucent color instead of backdrop blur, avoiding rendering artifacts
+seen in some Windows environments.
 
 ```tsx
 import {

@@ -1,16 +1,15 @@
 export function generateAvatarFallback(name: string | null | undefined): string {
-  if (!name) {
-    return "";
-  }
+  const trimmedName = name?.trim();
+  if (!trimmedName) return "";
 
-  const nameParts = name.trim().split(/\s+/);
+  const nameParts = trimmedName.split(/\s+/);
+  const firstInitial = Array.from(nameParts[0] ?? "")[0] ?? "";
 
   if (nameParts.length === 1) {
-    return nameParts[0] ?? "";
+    return firstInitial.toLocaleUpperCase();
   }
 
-  const firstLetter = nameParts[0]?.split("")[0];
-  const lastLetter = nameParts[nameParts.length - 1]?.split("")[0];
+  const lastInitial = Array.from(nameParts.at(-1) ?? "")[0] ?? "";
 
-  return `${firstLetter ?? ""}${lastLetter ?? ""}`;
+  return `${firstInitial}${lastInitial}`.toLocaleUpperCase();
 }

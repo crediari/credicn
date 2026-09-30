@@ -1,17 +1,19 @@
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
-import { ExampleCard } from "../../components/example-card/example-card";
 import { stats } from "./stats-data";
 
 function StatsPanel() {
   return (
     <div className="grid w-full max-w-3xl gap-4 md:grid-cols-[1fr_1.2fr]">
-      <ExampleCard
-        title="Registry starter"
-        description="Compose local registry items with shadcn dependencies."
-        status="Block"
-      />
+      <Card>
+        <CardHeader>
+          <CardTitle>Registry starter</CardTitle>
+        </CardHeader>
+        <CardContent className="text-sm text-muted-foreground">
+          Compose registry blocks with official shadcn dependencies.
+        </CardContent>
+      </Card>
       <Card>
         <CardHeader>
           <CardTitle>Registry health</CardTitle>

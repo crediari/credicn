@@ -46,6 +46,27 @@ type: registry:ui
     ]);
   });
 
+  test("installs registry:component items through the ui alias", () => {
+    const items = createRegistryMetadataItems({
+      "registry/items/components/example/_registry.mdx": `---
+name: example-component
+type: registry:component
+files:
+  - path: example-component.tsx
+    type: registry:component
+---
+`,
+    });
+
+    expect(items[0]?.files).toEqual([
+      {
+        path: "ui/example-component.tsx",
+        target: "@ui/example-component.tsx",
+        type: "registry:component",
+      },
+    ]);
+  });
+
   test("derives public install paths from item-relative source paths", () => {
     const items = createRegistryCatalogItems({
       "registry/items/hooks/use-example/_registry.mdx": `---

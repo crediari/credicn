@@ -148,15 +148,15 @@ const config = defineConfig({
     alias: [
       {
         find: "@/components/ui/avatar",
-        replacement: resolve(viteConfigDir, "registry/items/components/avatar/avatar.tsx"),
+        replacement: resolve(viteConfigDir, "src/components/ui/avatar.tsx"),
       },
       {
         find: "@/components/ui/calendar",
-        replacement: resolve(viteConfigDir, "registry/items/components/calendar/calendar.tsx"),
+        replacement: resolve(viteConfigDir, "src/components/ui/calendar.tsx"),
       },
       {
         find: "@/components/ui/popover",
-        replacement: resolve(viteConfigDir, "registry/items/components/popover/popover.tsx"),
+        replacement: resolve(viteConfigDir, "src/components/ui/popover.tsx"),
       },
       // shadcn/schema is compiled against Zod v3 and still calls deepPartial().
       // Keep bare zod imports on the v3 entry even when another dependency

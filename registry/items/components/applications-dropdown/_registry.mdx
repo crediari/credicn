@@ -2,22 +2,26 @@
 name: applications-dropdown
 type: registry:component
 title: Applications Dropdown
-description: Grid of corporate apps and tools.
+description: Searchable grid of corporate apps and tools.
 dependencies:
   - lucide-react
-localRegistryDependencies:
+registryDependencies:
   - button
   - dropdown-menu
+  - input
+  - scroll-area
+localRegistryDependencies:
   - user-avatar
 files:
   - path: applications-dropdown.tsx
     type: registry:component
 ---
 
-Pass `systems` and `tools` as props. No SSO store required.
+Pass `systems` and `tools` as props. The search opens on demand, filters both lists locally, and
+keeps the square app grid inside a styled `ScrollArea`. No SSO store required.
 
 ```tsx
-import { ApplicationsDropdown } from "@/components/applications-dropdown";
+import { ApplicationsDropdown } from "@/components/ui/applications-dropdown";
 
 <ApplicationsDropdown
   user={{ name: "Ana Costa" }}

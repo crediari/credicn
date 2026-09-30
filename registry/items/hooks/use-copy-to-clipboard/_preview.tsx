@@ -6,7 +6,7 @@ import { useCopyToClipboard } from "./use-copy-to-clipboard";
 
 export function Preview() {
   const copyState = useCopyToClipboard();
-  const copyValue = "npx shadcn@latest add https://example.com/r/example-card.json";
+  const copyValue = "npx shadcn@latest add https://example.com/r/user-avatar.json";
 
   return (
     <div className="flex flex-col items-center gap-3 text-center">

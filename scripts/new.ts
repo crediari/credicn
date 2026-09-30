@@ -82,7 +82,7 @@ async function promptRegistryScaffoldInput(): Promise<RegistryScaffoldInput> {
   const name = await promptValue(
     text({
       message: "Item name",
-      placeholder: "example-card",
+      placeholder: "project-card",
       validate: (value) => validateRegistryScaffoldName(value ?? ""),
     }),
   );

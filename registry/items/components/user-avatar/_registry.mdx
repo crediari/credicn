@@ -2,8 +2,8 @@
 name: user-avatar
 type: registry:component
 title: User Avatar
-description: User avatar with generated initials fallback.
-localRegistryDependencies:
+description: User avatar with generated initials fallback and overlapping avatar groups.
+registryDependencies:
   - avatar
 files:
   - path: user-avatar.tsx
@@ -12,10 +12,45 @@ files:
     type: registry:lib
 ---
 
-Pass `username` and optional `userimage`. Initials come from the first and last name.
+Passe `username` e `userimage` opcional. Nomes completos usam as iniciais do primeiro e último
+nome; nomes simples, como `João`, usam apenas `J`. Espaços excedentes são ignorados e as iniciais
+são normalizadas para maiúsculas.
 
 ```tsx
-import { UserAvatar } from "@/components/user-avatar";
+import { UserAvatar } from "@/components/ui/user-avatar";
 
 <UserAvatar username="Ana Costa" userimage={null} />
+<UserAvatar username="João" userimage={null} />
+```
+
+## Avatar Group
+
+`UserAvatarGroup` cria agrupamentos sobrepostos e reutiliza o mesmo fallback em gradiente. Use
+`max` para limitar os avatares visíveis; o restante aparece automaticamente como `+N`.
+
+```tsx
+import { UserAvatarGroup } from "@/components/ui/user-avatar";
+
+<UserAvatarGroup
+  users={[
+    { id: 1, username: "Ana Costa", userimage: null },
+    { id: 2, username: "João", userimage: null },
+    { id: 3, username: "Maria Silva", userimage: "/avatars/maria.jpg" },
+    { id: 4, username: "Carlos Oliveira", userimage: null },
+  ]}
+  max={3}
+  size="default"
+/>
+```
+
+Os tamanhos `sm`, `default` e `lg` são aplicados a todos os avatares e ao contador. Para
+personalização, use `avatarClassName`, `overflowClassName` ou `renderOverflow`.
+
+```tsx
+<UserAvatarGroup
+  users={team}
+  max={4}
+  size="lg"
+  renderOverflow={(remaining) => `${remaining} outros`}
+/>
 ```

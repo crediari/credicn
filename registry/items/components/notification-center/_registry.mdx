@@ -1,0 +1,95 @@
+---
+name: notification-center
+type: registry:ui
+title: Notification Center
+description: Reusable notification dialog with unread indicator, read controls, and delivery preferences.
+dependencies:
+  - lucide-react
+registryDependencies:
+  - badge
+  - button
+  - scroll-area
+  - switch
+  - tabs
+localRegistryDependencies:
+  - dialog
+---
+
+Uma central de notificações pronta para uso, inspirada no fluxo do CrediDesk e desacoplada de
+roteador, contexto global e backend. O trigger com sino mostra a quantidade de itens não lidos;
+o dialog organiza notificações lidas e não lidas; e a área de preferências permite controlar o
+recebimento por categoria.
+
+```tsx
+import { NotificationCenter } from "@/components/ui/notification-center";
+
+<NotificationCenter
+  notifications={notifications}
+  preferences={preferences}
+  onNotificationOpen={(notification) => {
+    if (notification.href) navigate(notification.href);
+  }}
+  onMarkAsRead={(notification) => markAsRead(notification.id)}
+  onMarkAllAsRead={() => markAllAsRead()}
+  onPreferenceChange={(preference, enabled) =>
+    updatePreference(preference.id, enabled)
+  }
+/>;
+```
+
+## Formato das notificações
+
+O componente espera dados já normalizados. Mantenha navegação, consulta e persistência no app.
+
+```tsx
+const notifications = [
+  {
+    id: "notification-id",
+    title: "Novo chamado atribuído",
+    description: "O chamado #4821 precisa de uma primeira resposta.",
+    createdAt: new Date(),
+    read: false,
+    tone: "info",
+    metadata: "Atendimento",
+    href: "/tickets/4821",
+  },
+];
+```
+
+`tone` aceita `default`, `info`, `success`, `warning` e `error`. Use `icon` para substituir o
+ícone padrão da categoria. O texto de `description` é renderizado como texto, evitando que HTML
+recebido da API seja injetado diretamente na interface.
+
+## Preferências de recebimento
+
+A aba de preferências aparece quando o prop `preferences` contém itens. O estado permanece
+controlado pelo consumidor, o que permite persistir alterações na API e fazer rollback quando uma
+requisição falhar.
+
+```tsx
+const preferences = [
+  {
+    id: "mentions",
+    label: "Menções e respostas",
+    description: "Avise quando alguém mencionar você.",
+    enabled: true,
+  },
+];
+```
+
+Use `pendingPreferenceIds` para desabilitar somente os switches que estiverem sendo persistidos.
+
+## Operações assíncronas
+
+- `loading` exibe o estado de carregamento da lista.
+- `error` e `onRetry` exibem uma recuperação de falha.
+- `pendingNotificationIds` controla o progresso da leitura individual.
+- `markingAllAsRead` controla o progresso da leitura em lote.
+- `open`, `defaultOpen` e `onOpenChange` permitem uso controlado ou não controlado do dialog.
+- `closeOnNotificationOpen={false}` mantém o dialog aberto ao selecionar uma notificação.
+- `formatTimestamp` permite substituir a formatação relativa padrão.
+
+## Integração recomendada
+
+Consulte o guia [Implementando notificações](/docs/notifications) para contratos HTTP, schema de
+banco de dados, preferências, atualização otimista, polling, tempo real e cuidados de segurança.

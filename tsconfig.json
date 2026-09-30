@@ -5,9 +5,9 @@
     "jsx": "react-jsx",
     "module": "ESNext",
     "paths": {
-      "@/components/ui/avatar": ["./registry/items/components/avatar/avatar.tsx"],
-      "@/components/ui/calendar": ["./registry/items/components/calendar/calendar.tsx"],
-      "@/components/ui/popover": ["./registry/items/components/popover/popover.tsx"],
+      "@/components/ui/avatar": ["./src/components/ui/avatar.tsx"],
+      "@/components/ui/calendar": ["./src/components/ui/calendar.tsx"],
+      "@/components/ui/popover": ["./src/components/ui/popover.tsx"],
       "@/*": ["./src/*"],
       "content-collections": ["./.content-collections/generated"]
     },

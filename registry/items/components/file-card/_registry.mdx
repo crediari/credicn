@@ -1,0 +1,106 @@
+---
+name: file-card
+type: registry:ui
+title: File Card
+description: Displays a file or image attachment with media, metadata, upload state, and actions.
+dependencies:
+  - "@base-ui/react"
+registryDependencies:
+  - button
+---
+
+O `FileCard` segue a composição do `Attachment` oficial do shadcn/ui. Ele exibe arquivos ou
+imagens com mídia, nome, metadados, ações independentes e o ciclo completo de upload.
+
+```tsx
+import { FileTextIcon, XIcon } from "lucide-react";
+
+import {
+  FileCard,
+  FileCardAction,
+  FileCardActions,
+  FileCardContent,
+  FileCardDescription,
+  FileCardMedia,
+  FileCardTitle,
+} from "@/components/ui/file-card";
+
+<FileCard>
+  <FileCardMedia>
+    <FileTextIcon />
+  </FileCardMedia>
+  <FileCardContent>
+    <FileCardTitle>contrato.pdf</FileCardTitle>
+    <FileCardDescription>PDF · 2,4 MB</FileCardDescription>
+  </FileCardContent>
+  <FileCardActions>
+    <FileCardAction aria-label="Remover contrato.pdf">
+      <XIcon />
+    </FileCardAction>
+  </FileCardActions>
+</FileCard>;
+```
+
+## Composição
+
+```text
+FileCard
+├── FileCardMedia
+├── FileCardContent
+│   ├── FileCardTitle
+│   └── FileCardDescription
+├── FileCardActions
+│   └── FileCardAction
+└── FileCardTrigger
+```
+
+Use `FileCardGroup` para organizar vários anexos em uma linha horizontal com scroll e snap.
+
+## Estados
+
+O prop `state` aceita `idle`, `uploading`, `processing`, `error` e `done`. Os estados de envio e
+processamento aplicam shimmer ao título; erros recebem tratamento destrutivo; e o estado inicial
+usa uma borda tracejada. Mantenha a causa do erro em `FileCardDescription` para que o estado não
+dependa apenas de cor.
+
+```tsx
+<FileCard state="uploading">
+  <FileCardMedia>
+    <FileTextIcon />
+  </FileCardMedia>
+  <FileCardContent>
+    <FileCardTitle>documentos.zip</FileCardTitle>
+    <FileCardDescription>Enviando · 64%</FileCardDescription>
+  </FileCardContent>
+</FileCard>
+```
+
+## Imagem e orientação
+
+Use `variant="image"` em `FileCardMedia` para uma miniatura e `orientation="vertical"` no card
+para empilhar mídia e conteúdo.
+
+```tsx
+<FileCard orientation="vertical">
+  <FileCardMedia variant="image">
+    <img src="/foto.png" alt="Prévia da foto" />
+  </FileCardMedia>
+  <FileCardContent>
+    <FileCardTitle>foto.png</FileCardTitle>
+    <FileCardDescription>PNG · 820 KB</FileCardDescription>
+  </FileCardContent>
+</FileCard>
+```
+
+## Tamanhos e trigger
+
+`size` aceita `default`, `sm` e `xs`. `FileCardTrigger` cria uma área interativa sobre o card sem
+bloquear as ações. Ele renderiza um botão por padrão ou outro elemento por meio do prop `render`.
+Sempre forneça um `aria-label` tanto ao trigger quanto às ações somente com ícone.
+
+```tsx
+<FileCard size="sm">
+  {/* mídia, conteúdo e ações */}
+  <FileCardTrigger aria-label="Visualizar contrato.pdf" />
+</FileCard>
+```

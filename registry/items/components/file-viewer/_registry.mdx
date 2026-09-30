@@ -1,0 +1,54 @@
+---
+name: file-viewer
+type: registry:component
+title: File Viewer
+description: Accessible file preview dialog for images, PDF, media, text, CSV, and Excel workbooks.
+dependencies:
+  - exceljs
+  - lucide-react
+files:
+  - path: file-viewer.tsx
+    type: registry:component
+---
+
+Visualize arquivos em um diálogo responsivo e acessível. O componente suporta imagens, PDF,
+vídeo, áudio, texto/código, CSV, TSV, XLSX e XLSM, além de navegação por teclado, download,
+zoom e rotação de imagens. Textos e planilhas são processados localmente no navegador.
+Enquanto o diálogo está aberto, o scroll da página é bloqueado e restaurado na posição anterior
+ao fechar, inclusive em navegadores móveis.
+
+```tsx
+import { useState } from "react";
+
+import { FileViewer, type FileViewerFile } from "@/components/ui/file-viewer";
+
+const files: FileViewerFile[] = [
+  { id: 1, name: "contrato.pdf", size: 245_800 },
+  { id: 2, name: "projecao.xlsx", size: 89_400 },
+];
+
+export function Attachments() {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <>
+      <button onClick={() => setOpen(true)}>Visualizar arquivos</button>
+      <FileViewer
+        files={files}
+        open={open}
+        onOpenChange={setOpen}
+        resolveFile={async (file, signal) => {
+          const response = await fetch(`/api/files/${file.id}`, { signal });
+          if (!response.ok) throw new Error("Falha ao carregar arquivo");
+          return response.blob();
+        }}
+      />
+    </>
+  );
+}
+```
+
+Você também pode fornecer `source` em cada arquivo como URL, `Blob`, `ArrayBuffer` ou
+`Uint8Array`. Use `renderPreview` para adicionar formatos específicos do seu app e
+`onDownload` quando o download exigir uma API própria. Arquivos XLS legados devem ser
+convertidos para XLSX ou tratados por um renderizador customizado.

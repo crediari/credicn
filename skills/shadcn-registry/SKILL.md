@@ -1,6 +1,6 @@
 ---
 name: shadcn-registry
-description: Add or adapt installable shadcn registry items in _cn template repos.
+description: Add or adapt installable shadcn registry items in the credicn component platform.
 ---
 
 # Shadcn Registry

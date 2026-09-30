@@ -1,0 +1,244 @@
+---
+title: Implementando notificações
+description: Arquitetura recomendada para persistência, APIs, preferências e consumo de notificações nos sistemas internos.
+order: 5
+group: Guias
+---
+
+Este guia descreve uma base reutilizável para notificações dentro dos sistemas internos. O
+[`NotificationCenter`](/components/notification-center) resolve a interface, mas a aplicação
+continua responsável por autorização, persistência, entrega e navegação.
+
+<Callout title="Princípio principal">
+  Separe o conteúdo da notificação do estado de entrega de cada destinatário. Uma notificação pode
+  ter vários destinatários, mas cada pessoa possui seu próprio estado de leitura.
+</Callout>
+
+## Modelo de dados
+
+O exemplo abaixo usa Prisma apenas como referência. A mesma separação funciona em qualquer banco
+relacional.
+
+```prisma
+enum NotificationTone {
+  DEFAULT
+  INFO
+  SUCCESS
+  WARNING
+  ERROR
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+}
+
+model Notification {
+  id          String   @id @default(uuid())
+  eventKey    String
+  title       String
+  description String?
+  tone        NotificationTone @default(DEFAULT)
+  action      Json?
+  metadata    Json?
+  dedupeKey   String?  @unique
+  createdAt   DateTime @default(now())
+  expiresAt   DateTime?
+
+  recipients NotificationRecipient[]
+
+  @@index([createdAt])
+  @@index([eventKey, createdAt])
+}
+
+model NotificationRecipient {
+  id             String       @id @default(uuid())
+  notificationId String
+  notification   Notification @relation(fields: [notificationId], references: [id], onDelete: Cascade)
+  userId         String
+  readAt         DateTime?
+  archivedAt     DateTime?
+  deliveredAt    DateTime?
+
+  @@unique([notificationId, userId])
+  @@index([userId, readAt, notificationId])
+  @@index([userId, archivedAt, notificationId])
+}
+
+model NotificationPreference {
+  id        String @id @default(uuid())
+  userId    String
+  eventKey  String
+  channel   NotificationChannel
+  enabled   Boolean @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([userId, eventKey, channel])
+  @@index([userId, channel])
+}
+```
+
+`eventKey` deve representar um evento estável, como `ticket.assigned` ou `comment.mentioned`.
+Evite criar uma coluna booleana para cada nova preferência: a combinação `eventKey + channel`
+evolui sem exigir uma migration para cada tipo de evento.
+
+`action` deve conter dados declarativos, por exemplo `{ "type": "ticket", "ticketId": "..." }`.
+O frontend converte esse contrato em navegação. Não armazene callbacks, HTML executável ou URLs
+externas sem validação.
+
+## Criação e entrega
+
+Uma operação de negócio deve produzir um evento e não conhecer detalhes da UI. O fluxo recomendado
+é:
+
+1. Concluir a alteração de negócio e registrar um evento/outbox na mesma transação.
+2. Resolver destinatários no backend, respeitando escopo e permissões atuais.
+3. Consultar preferências por `eventKey` e canal.
+4. Criar `Notification` e `NotificationRecipient` para o canal in-app.
+5. Enfileirar e-mail ou push fora da transação principal.
+6. Publicar um aviso em tempo real somente depois do commit.
+
+Use uma `dedupeKey` quando o produtor puder repetir o mesmo evento. Para fluxos críticos, prefira
+o padrão outbox a uma chamada direta para e-mail ou WebSocket: assim uma falha externa não desfaz
+a operação principal e o envio pode ser repetido com segurança.
+
+## Contrato HTTP
+
+Uma API pequena costuma ser suficiente:
+
+| Método  | Rota                                                   | Finalidade                                 |
+| ------- | ------------------------------------------------------ | ------------------------------------------ |
+| `GET`   | `/api/notifications?status=unread&cursor=...&limit=30` | Lista paginada do usuário autenticado      |
+| `GET`   | `/api/notifications/unread-count`                      | Contador leve para o header                |
+| `PATCH` | `/api/notifications/:id/read`                          | Marca uma notificação como lida            |
+| `POST`  | `/api/notifications/read-all`                          | Marca como lidas as notificações elegíveis |
+| `GET`   | `/api/notification-preferences`                        | Preferências efetivas do usuário           |
+| `PUT`   | `/api/notification-preferences/:eventKey/:channel`     | Atualiza uma preferência                   |
+
+Nunca aceite `userId` do navegador como autoridade. Obtenha o usuário da sessão e faça toda
+atualização com `WHERE userId = session.user.id`. Retorne `404` tanto para itens inexistentes
+quanto para itens pertencentes a outra pessoa, evitando revelar sua existência.
+
+Exemplo de resposta normalizada:
+
+```json
+{
+  "items": [
+    {
+      "id": "notification-id",
+      "title": "Novo chamado atribuído",
+      "description": "O chamado #4821 precisa de uma primeira resposta.",
+      "tone": "info",
+      "createdAt": "2026-09-29T17:56:00.000Z",
+      "read": false,
+      "metadata": "Atendimento",
+      "action": { "type": "ticket", "ticketId": "4821" }
+    }
+  ],
+  "nextCursor": null,
+  "unreadCount": 1
+}
+```
+
+Use paginação por cursor baseada em `(createdAt, id)`. Paginação por offset fica cara e pode
+duplicar ou pular registros enquanto novas notificações chegam.
+
+## Hook de consulta
+
+Com TanStack Query, mantenha a consulta e as mutações fora do componente visual:
+
+```tsx
+function useNotifications() {
+  const queryClient = useQueryClient();
+  const queryKey = ["notifications"] as const;
+
+  const query = useQuery({
+    queryKey,
+    queryFn: listNotifications,
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  });
+
+  const markAsRead = useMutation({
+    mutationFn: (id: string) => api.markNotificationAsRead(id),
+    onMutate: async (id) => {
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData(queryKey);
+      queryClient.setQueryData(queryKey, (current) => markReadLocally(current, id));
+      return { previous };
+    },
+    onError: (_error, _id, context) => {
+      queryClient.setQueryData(queryKey, context?.previous);
+    },
+    onSettled: () => queryClient.invalidateQueries({ queryKey }),
+  });
+
+  return { ...query, markAsRead };
+}
+```
+
+Faça a mesma atualização otimista no contador do header. Em falha, restaure o snapshot anterior e
+mostre feedback; não deixe uma notificação visualmente lida quando o servidor rejeitou a operação.
+
+## Tempo real e sincronização
+
+SSE é uma boa opção quando o navegador apenas recebe eventos. WebSocket faz sentido quando o app
+já possui comunicação bidirecional. Em ambos os casos, envie somente um evento pequeno com o ID ou
+uma indicação de invalidação e consulte novamente a API como fonte de verdade.
+
+- Reconecte com backoff e jitter.
+- Faça refetch ao recuperar foco ou conexão.
+- Mantenha polling como fallback quando tempo real não for necessário.
+- Não incremente o contador cegamente: eventos podem ser duplicados ou chegar fora de ordem.
+- Sincronize abas com `BroadcastChannel` ou invalidação compartilhada quando isso for relevante.
+
+## Preferências
+
+Defina defaults no servidor para que usuários novos tenham comportamento previsível. Diferencie:
+
+- preferências editáveis, como novidades e atualizações comuns;
+- comunicações obrigatórias, como segurança e indisponibilidade, que devem aparecer desabilitadas
+  na UI com uma explicação;
+- canais independentes (`IN_APP`, `EMAIL`, `PUSH`). Desativar e-mail não deve implicitamente
+  desativar a notificação dentro do app.
+
+O endpoint de preferências deve devolver o estado efetivo, incluindo defaults ainda não
+materializados no banco. Faça rollback visual do `Switch` quando a persistência falhar.
+
+## Segurança, privacidade e operação
+
+- Renderize mensagens como texto. Se rich text for indispensável, sanitize no servidor e no
+  cliente com uma allowlist pequena.
+- Não inclua segredos ou dados sensíveis no payload de WebSocket, logs ou push.
+- Revalide autorização quando a ação for aberta; receber uma notificação não concede acesso ao
+  recurso para sempre.
+- Defina retenção e limpeza para notificações antigas e expiradas.
+- Registre métricas de criação, entrega, falha, leitura e tamanho das filas.
+- Teste isolamento por usuário, deduplicação, leitura concorrente, defaults de preferência,
+  reconexão e rollback otimista.
+
+## Ligando os dados ao componente
+
+```tsx
+<NotificationCenter
+  notifications={query.data?.items ?? []}
+  preferences={preferencesQuery.data ?? []}
+  loading={query.isPending}
+  error={query.error?.message}
+  pendingNotificationIds={markAsRead.isPending ? [markAsRead.variables] : []}
+  markingAllAsRead={markAllAsRead.isPending}
+  onRetry={() => query.refetch()}
+  onMarkAsRead={(notification) => markAsRead.mutateAsync(notification.id)}
+  onMarkAllAsRead={() => markAllAsRead.mutateAsync()}
+  onPreferenceChange={(preference, enabled) =>
+    updatePreference.mutateAsync({ id: preference.id, enabled })
+  }
+  onNotificationOpen={(notification) => openNotificationAction(notification.id)}
+/>
+```
+
+O componente deriva o contador a partir de `notifications`. Se o header consultar apenas um
+endpoint de contagem, carregue ao menos as notificações não lidas ao abrir o dialog para reconciliar
+o valor antes de renderizar a lista.

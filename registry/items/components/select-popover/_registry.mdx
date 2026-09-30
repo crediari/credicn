@@ -2,10 +2,10 @@
 name: select-popover
 type: registry:component
 title: Select Popover
-description: Searchable select built on Command and Popover.
+description: Generic searchable select with custom item rendering, single or multiple selection, and bounded DOM output.
 dependencies:
   - lucide-react
-localRegistryDependencies:
+registryDependencies:
   - button
   - command
   - popover
@@ -14,16 +14,54 @@ files:
     type: registry:component
 ---
 
-Pass generic items plus `labelKey` and `valueKey`. Use `onSearchChange` for remote search.
+Provide `getItemValue` and `getItemLabel` to use any item shape. The popover automatically matches
+the trigger width. Search is accent-insensitive and can include extra fields through
+`getItemKeywords`.
+
+## Single selection
 
 ```tsx
-import { SelectPopover } from "@/components/select-popover";
+import { SelectPopover } from "@/components/ui/select-popover";
 
 <SelectPopover
   items={cities}
   value={city}
-  onSelect={setCity}
-  labelKey="name"
-  valueKey="id"
+  onValueChange={setCity}
+  getItemValue={(item) => item.id}
+  getItemLabel={(item) => item.name}
+  getItemKeywords={(item) => [item.state]}
+  resultLimit={50}
 />
 ```
+
+`resultLimit` defaults to `100`. Only that many filtered items are mounted, keeping large datasets
+from creating an oversized DOM. A message asks the user to refine the search when more results are
+available.
+
+## Multiple selection and custom content
+
+```tsx
+<SelectPopover
+  multiple
+  items={users}
+  value={selectedUsers}
+  onValueChange={setSelectedUsers}
+  getItemValue={(user) => user.id}
+  getItemLabel={(user) => user.name}
+  getItemKeywords={(user) => [user.email]}
+  renderValue={(users) => `${users.length} selecionados`}
+  renderItem={(user) => (
+    <div className="flex items-center gap-3">
+      <img src={user.avatarUrl} alt="" className="size-8 rounded-full" />
+      <div>
+        <p>{user.name}</p>
+        <p className="text-xs text-muted-foreground">{user.email}</p>
+      </div>
+    </div>
+  )}
+/>
+```
+
+Multiple selection keeps the popover open by default so several items can be toggled. Use
+`closeOnSelect` to change that behavior. For server-side search, control `searchValue`, handle
+`onSearchValueChange`, and set `shouldFilter={false}`.

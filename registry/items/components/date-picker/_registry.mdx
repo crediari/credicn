@@ -2,11 +2,11 @@
 name: date-picker
 type: registry:component
 title: Date Picker
-description: Popover date picker with Portuguese locale.
+description: Single date and date range picker with Portuguese locale.
 dependencies:
   - date-fns
   - lucide-react
-localRegistryDependencies:
+registryDependencies:
   - button
   - calendar
   - popover
@@ -15,10 +15,20 @@ files:
     type: registry:component
 ---
 
-Bind `value` and `onChange` for a single date. Future days are disabled.
+Use the default type for a single date. Future days are disabled in this mode.
 
 ```tsx
-import { DatePicker } from "@/components/date-picker";
+import { DatePicker } from "@/components/ui/date-picker";
 
 <DatePicker value={date} onChange={setDate} />
+```
+
+Set `type="range"` to select a start and end date. The calendar displays two months and uses the range-specific placeholder automatically.
+
+```tsx
+import type { DateRange } from "react-day-picker";
+
+const [period, setPeriod] = useState<DateRange | undefined>();
+
+<DatePicker type="range" value={period} onChange={setPeriod} />
 ```

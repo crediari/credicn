@@ -4,7 +4,7 @@ const shadcnDefaultTargetSegmentsByFileType: Partial<Record<RegistryFileType, st
   // Mirrors shadcn's resolveFileTargetDirectory: these file types install
   // through components.json resolved paths when no explicit target is set.
   "registry:block": "components",
-  "registry:component": "components",
+  "registry:component": "ui",
   "registry:hook": "hooks",
   "registry:lib": "lib",
   "registry:ui": "ui",
@@ -12,7 +12,7 @@ const shadcnDefaultTargetSegmentsByFileType: Partial<Record<RegistryFileType, st
 
 const shadcnTargetPlaceholdersByFileType: Partial<Record<RegistryFileType, string>> = {
   "registry:block": "@components",
-  "registry:component": "@components",
+  "registry:component": "@ui",
   "registry:hook": "@hooks",
   "registry:lib": "@lib",
   "registry:ui": "@ui",

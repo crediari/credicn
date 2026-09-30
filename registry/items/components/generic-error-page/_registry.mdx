@@ -2,24 +2,38 @@
 name: generic-error-page
 type: registry:component
 title: Generic Error Page
-description: Full-page error state with optional actions.
+description: Full-page error state with presets, matching illustrations, and optional actions.
 dependencies:
   - lucide-react
-localRegistryDependencies:
+registryDependencies:
   - button
 files:
   - path: generic-error-page.tsx
     type: registry:component
 ---
 
-Pass a title, description, and optional buttons with URLs.
+Use `variant` to select the message and illustration for the error. Available variants are `generic`, `not-found`, `server-error`, `forbidden`, `unauthorized`, `offline`, and `maintenance`.
 
 ```tsx
-import { GenericErrorPage } from "@/components/generic-error-page";
+import { GenericErrorPage } from "@/components/ui/generic-error-page";
 
 <GenericErrorPage
-  title="Página não encontrada"
-  description="O endereço pode ter mudado."
-  buttons={[{ label: "Voltar", url: "/", variant: "default" }]}
+  variant="not-found"
+  buttons={[
+    { label: "Voltar ao início", url: "/" },
+    { label: "Falar com o suporte", url: "/suporte", variant: "outline" },
+  ]}
 />
 ```
+
+All content and actions are optional. Omit `buttons` for a purely informative state, or override the preset copy when the context needs a more specific message.
+
+```tsx
+<GenericErrorPage
+  variant="server-error"
+  title="Não foi possível carregar o relatório"
+  description="Seus dados estão seguros. Tente novamente em alguns minutos."
+/>
+```
+
+Pass `illustration` to replace the built-in visual with any React node.

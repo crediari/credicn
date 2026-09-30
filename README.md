@@ -1,4 +1,4 @@
-# \_cn
+# credicn
 
 <p align="center">
   <img src="docs/media/readme-dark.gif" alt="Crediari library homepage in dark theme with Ghost Fibers" />
@@ -7,27 +7,18 @@
   <img src="docs/media/readme-light.gif" alt="Crediari library homepage in light theme with Scanner" />
 </p>
 
-An intentionally minimal [TanStack Start](https://tanstack.com/start/latest) + [Vite+](https://viteplus.dev/) starter template for publishing a [shadcn-compatible registry](https://ui.shadcn.com/docs/registry) without writing the documentation site and registry plumbing from scratch.
+The private CrediAri platform for organizing, documenting, and sharing our reusable UI components through a [shadcn-compatible registry](https://ui.shadcn.com/docs/registry).
 
-The scaffold contains a typed registry authoring layer, authored docs, live preview pages, syntax-highlighted source snippets, schema validation, package-manager install commands, and TanStack Start server routes. [See a demo here.](https://ui.jarv.is)
-
-> [!TIP]
-> `_cn` is pronounced "underscore-cn".
+The app uses [TanStack Start](https://tanstack.com/start/latest) and [Vite+](https://viteplus.dev/), with authored docs, live previews, syntax-highlighted source, schema validation, and package-manager install commands.
 
 ## Quick Start
 
-You can either [create a new repository](https://github.com/new?template_name=_cn&template_owner=jakejarvis) based on this template directly in your GitHub account/organization, or use a tool like [`degit`](https://github.com/Rich-Harris/degit) to scaffold a fresh repo locally with the latest \_cn code.
+Clone the CrediAri repository and ensure [Vite+](https://viteplus.dev/guide/) (`vp`) is installed on your system.
 
 ```bash
-npx degit jakejarvis/_cn
+git clone https://github.com/crediari/credicn.git
+cd credicn
 
-# or use the "Use this template" button and then clone:
-git clone https://github.com/your-username/my-cn.git
-```
-
-Once cloned, ensure you have [Vite+](https://viteplus.dev/guide/) (`vp`) installed on your system; this will ensure all other requirements are taken care of for you.
-
-```bash
 # Install Vite+
 curl -fsSL https://vite.plus | bash
 
@@ -36,14 +27,14 @@ vp install
 vp dev
 ```
 
-Open the localhost URL from the Vite+ output and browse the starter docs, component, block, and utility pages. A good place to start customizing is the [`config.ts`](registry/config.ts) file.
+Open the localhost URL from the Vite+ output to browse the docs, components, blocks, and utilities.
 
 ## Agent Skill
 
-This repository includes an installable Agent Skill for authoring `_cn` registry items. Install it into your harness from the upstream template using the [Skills CLI](https://skills.sh/):
+This repository includes an installable Agent Skill for authoring credicn registry items. Install it with the [Skills CLI](https://skills.sh/):
 
 ```bash
-npx skills add jakejarvis/_cn --skill shadcn-registry
+npx skills add crediari/credicn --skill shadcn-registry
 ```
 
 After installing the skill, ask your agent for registry authoring work directly:
@@ -53,14 +44,6 @@ After installing the skill, ask your agent for registry authoring work directly:
 - "add a reusable hook to the registry"
 - "turn this dashboard section into a registry block"
 
-## Deploy
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https%3A%2F%2Fgithub.com%2Fjakejarvis%2F_cn&project-name=my-registry&repository-name=my-registry&demo-title=_cn%20Registry&demo-url=https%3A%2F%2Funderscore-cn.vercel.app)
-
-Above is a one-click button to fork the template and deploy it to Vercel as a platform-agnostic [Nitro server](https://nitro.build/).
-
-You can just as easily use any other platform (Cloudflare Workers, Netlify, etc.) by following the [TanStack Start docs](https://tanstack.com/start/latest/docs/framework/react/guide/hosting#deployment) to make a few adjustments to your `vite.config.ts` file (agents are usually pretty good at this too).
-
 ## Usage
 
 ### Configuration
@@ -69,12 +52,12 @@ Edit `registry/config.ts`.
 
 ```ts
 export const registryConfig = {
-  name: "_cn",
-  registryName: "_cn",
-  namespace: "@_cn",
-  description: "Installable components for your project.",
-  homepage: "https://underscore-cn.vercel.app",
-  repositoryUrl: "https://github.com/jakejarvis/_cn",
+  name: "credicn",
+  registryName: "credicn",
+  namespace: "@credicn",
+  description: "A private CrediAri registry for organizing and sharing UI components.",
+  homepage: "https://library-prototype-cn.vercel.app",
+  repositoryUrl: "https://github.com/crediari/credicn",
 } as const;
 ```
 
@@ -119,20 +102,20 @@ It's always a good idea to also run `bun --bun ./scripts/doctor.ts` after making
 Create a folder under `registry/items/<section>/<item-name>/`.
 
 ```text
-registry/items/components/example-card/
+registry/items/components/project-card/
   _registry.mdx
   _preview.tsx
-  example-card.tsx
+  project-card.tsx
 ```
 
 Write metadata and usage docs in `_registry.mdx`.
 
 ````mdx
 ---
-name: example-card
+name: project-card
 type: registry:ui
-title: Example Card
-description: A compact card component.
+title: Project Card
+description: A compact project card.
 registryDependencies:
   - card
 localRegistryDependencies:
@@ -142,10 +125,10 @@ localRegistryDependencies:
 Use the component anywhere you need a compact content summary.
 
 ```tsx
-import { ExampleCard } from "@/components/ui/example-card";
+import { ProjectCard } from "@/components/ui/project-card";
 
 export function Example() {
-  return <ExampleCard />;
+  return <ProjectCard />;
 }
 ```
 ````
@@ -155,14 +138,14 @@ Put the interactive preview in `_preview.tsx`.
 ```tsx
 "use client";
 
-import { ExampleCard } from "./example-card";
+import { ProjectCard } from "./project-card";
 
 export function Preview() {
-  return <ExampleCard />;
+  return <ProjectCard />;
 }
 ```
 
-For a one-file component, the catalog infers the source file from the item root and `name`, then emits a shadcn target placeholder such as `@ui/example-card.tsx`. List `files` explicitly in frontmatter for hooks, libs, blocks, pages, custom target paths, or any item with multiple published files; file paths are relative to the item `_registry.mdx` file. Metadata-only styles, themes, fonts, bases, and universal items can omit `files`. Do not publish `_registry.mdx`, `_preview.tsx`, or other authoring-only files.
+For a one-file component, the catalog infers the source file from the item root and `name`, then emits a shadcn target placeholder such as `@ui/project-card.tsx`. List `files` explicitly in frontmatter for hooks, libs, blocks, pages, custom target paths, or any item with multiple published files; file paths are relative to the item `_registry.mdx` file. Metadata-only styles, themes, fonts, bases, and universal items can omit `files`. Do not publish `_registry.mdx`, `_preview.tsx`, or other authoring-only files.
 
 The MDX body renders as the optional Usage section on the docs page. Fenced code blocks are syntax highlighted and keep the docs site's copy button. `_preview.tsx` is authoring-only and can use local state or events behind its `"use client"` boundary, but server-only logic should stay out of previews. Use `localRegistryDependencies` for dependencies on other local registry items; they are converted into canonical registry URLs in the public JSON.
 
@@ -176,7 +159,7 @@ The public registry index is available at both the root and `/r` paths, while in
 - `/llms.txt` and `/llms-full.txt` are generated from the same Markdown docs and registry item pages used by the site.
 
 > [!TIP]
-> \_cn validates authored registry metadata against schemas directly from [`shadcn/schema`](https://github.com/shadcn-ui/ui/blob/main/packages/shadcn/src/registry/schema.ts) to ensure compatibility.
+> credicn validates authored registry metadata against schemas directly from [`shadcn/schema`](https://github.com/shadcn-ui/ui/blob/main/packages/shadcn/src/registry/schema.ts) to ensure compatibility.
 
 ### Content Negotiation
 
@@ -189,14 +172,13 @@ All pages also support Markdown content negotiation (inspired by [Fumadocs](http
 
 ## Checklist
 
-- [ ] Choose a registry name, namespace, domain, and repository URL in `registry/config.ts`.
-- [ ] Update or replace the starter docs under `registry/docs`.
-- [ ] Update or replace the starter registry items in `registry/items`; use `bun --bun ./scripts/new.ts` to generate new stubs.
+- [ ] Keep the registry identity, domain, and repository URL current in `registry/config.ts`.
+- [ ] Update docs under `registry/docs` as the platform evolves.
+- [ ] Add registry items under `registry/items`; use `bun --bun ./scripts/new.ts` to generate new stubs.
 - [ ] Run `bun --bun ./scripts/doctor.ts` to verify changes.
 - [ ] Run `vp check` and `vp build`.
-- [ ] Deploy!
+- [ ] Deploy to the internal environment.
 - [ ] Test the install commands with npm, pnpm, yarn, bun, vite+, and deno.
-- [ ] Optionally submit your registry to shadcn's [official directory](https://ui.shadcn.com/docs/directory).
 
 ## Gotchas
 

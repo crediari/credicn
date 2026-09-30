@@ -1,7 +1,7 @@
 {
-  "name": "underscore-cn",
+  "name": "credicn",
   "private": true,
-  "description": "A TanStack Start template for publishing a shadcn-compatible registry.",
+  "description": "A private CrediAri registry with UI components.",
   "keywords": [
     "registry",
     "shadcn",
@@ -11,7 +11,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/jakejarvis/_cn.git"
+    "url": "https://github.com/crediari/credicn"
   },
   "type": "module",
   "scripts": {
@@ -42,6 +42,7 @@
     "clsx": "^2.1.1",
     "cmdk": "^1.1.1",
     "date-fns": "^4.4.0",
+    "exceljs": "^4.4.0",
     "lucide-react": "^1.47.0",
     "motion": "^13.4.0",
     "negotiator": "^1.0.0",

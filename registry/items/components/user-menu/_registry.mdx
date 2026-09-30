@@ -2,26 +2,45 @@
 name: user-menu
 type: registry:component
 title: User Menu
-description: Account menu with avatar, theme toggle, and logout.
+description: Account menu with profile shortcuts, theme controls, and logout.
 dependencies:
   - lucide-react
-localRegistryDependencies:
+registryDependencies:
   - button
   - dropdown-menu
-  - tooltip
+localRegistryDependencies:
   - user-avatar
 files:
   - path: user-menu.tsx
     type: registry:component
 ---
 
-Pass `user`, `onLogout`, and optional theme handlers. No auth store required.
+Pass the signed-in user and connect theme and logout behavior through props. The component has no
+auth store or router dependency, and its destination URLs can be customized for each app. The
+larger avatar inside the menu and the **Minha conta** item both navigate to `profileHref`, so apps
+outside Accounts should pass the full URL of the personal profile page.
+
+Use `variant="default"` for the standard trigger, `variant="compact"` when only the avatar should
+be visible, or `variant="sidebar"` for a full-width trigger that shows the user's name and email.
+The default variant is used when the prop is omitted.
 
 ```tsx
-import { UserMenu } from "@/components/user-menu";
+import { UserMenu } from "@/components/ui/user-menu";
 
 <UserMenu
   user={{ name: "Ana Costa", email: "ana@crediari.com" }}
-  onLogout={() => undefined}
+  theme="system"
+  onThemeChange={setTheme}
+  onLogout={logout}
+  profileHref={`${import.meta.env.VITE_SSO_APP_URL}/profile`}
+  canAdminister
 />
+```
+
+```tsx
+<UserMenu {...props} variant="compact" />
+
+<aside className="w-64">
+  <UserMenu {...props} variant="sidebar" />
+</aside>
 ```

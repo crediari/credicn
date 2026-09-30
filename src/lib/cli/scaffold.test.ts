@@ -86,7 +86,7 @@ describe("registry scaffold", () => {
   test("uses public install import paths in generated usage snippets", () => {
     const expectations = new Map<RegistryScaffoldItemType, string>([
       ["registry:ui", `import { ExampleItem } from "@/components/ui/example-item";`],
-      ["registry:component", `import { ExampleItem } from "@/components/example-item";`],
+      ["registry:component", `import { ExampleItem } from "@/components/ui/example-item";`],
       ["registry:block", `import { ExampleItem } from "@/components/example-item";`],
       ["registry:hook", `import { useExampleItem } from "@/hooks/example-item";`],
       ["registry:lib", `import { exampleItem } from "@/lib/example-item";`],

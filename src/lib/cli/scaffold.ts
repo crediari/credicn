@@ -365,6 +365,7 @@ function renderRegistryPreviewImport(input: RegistryScaffoldInput): string | nul
 
 function renderRegistryUsageSnippet(input: RegistryScaffoldInput): string {
   switch (input.type) {
+    case "registry:component":
     case "registry:ui":
       return [
         "```tsx",
@@ -374,7 +375,6 @@ function renderRegistryUsageSnippet(input: RegistryScaffoldInput): string {
         )}";`,
         "```",
       ].join("\n");
-    case "registry:component":
     case "registry:block":
       return [
         "```tsx",

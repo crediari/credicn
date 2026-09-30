@@ -230,9 +230,9 @@ function getAliasImportPathForTarget(target: string): string {
 function getAliasForRegistryFileType(type: RegistryFileType): string | null {
   switch (type) {
     case "registry:ui":
+    case "registry:component":
       return componentsConfig.aliases.ui;
     case "registry:block":
-    case "registry:component":
       return componentsConfig.aliases.components;
     case "registry:hook":
       return componentsConfig.aliases.hooks;

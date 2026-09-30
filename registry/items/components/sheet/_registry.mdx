@@ -1,0 +1,38 @@
+---
+name: sheet
+type: registry:ui
+title: Sheet
+description: Slide-over panel with a Windows-safe dark overlay.
+dependencies:
+  - "@base-ui/react"
+  - lucide-react
+registryDependencies:
+  - button
+---
+
+Use a sheet for secondary content and workflows that slide in from an edge. Set `side` on
+`SheetContent` to `top`, `right`, `bottom`, or `left`.
+
+The overlay uses a solid translucent color instead of backdrop blur, avoiding rendering artifacts
+seen in some Windows environments.
+
+```tsx
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+
+<Sheet>
+  <SheetTrigger>Abrir painel</SheetTrigger>
+  <SheetContent side="right">
+    <SheetHeader>
+      <SheetTitle>Editar perfil</SheetTitle>
+      <SheetDescription>Atualize os dados e salve quando terminar.</SheetDescription>
+    </SheetHeader>
+  </SheetContent>
+</Sheet>
+```
