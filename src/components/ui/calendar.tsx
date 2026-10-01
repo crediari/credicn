@@ -1,6 +1,4 @@
-"use client";
-
-import { ChevronDownIcon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
+import { ChevronLeftIcon, ChevronRightIcon, ChevronDownIcon } from "lucide-react";
 import * as React from "react";
 import { DayPicker, getDefaultClassNames, type DayButton, type Locale } from "react-day-picker";
 
@@ -113,9 +111,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        Root: ({ className: rootClassName, rootRef, ...rootProps }) => (
-          <div data-slot="calendar" ref={rootRef} className={cn(rootClassName)} {...rootProps} />
-        ),
+        Root: ({ className: rootClassName, rootRef, ...rootProps }) => {
+          return (
+            <div data-slot="calendar" ref={rootRef} className={cn(rootClassName)} {...rootProps} />
+          );
+        },
         Chevron: ({ className: chevronClassName, orientation, ...chevronProps }) => {
           if (orientation === "left") {
             return <ChevronLeftIcon className={cn("size-4", chevronClassName)} {...chevronProps} />;
@@ -130,13 +130,15 @@ function Calendar({
           return <ChevronDownIcon className={cn("size-4", chevronClassName)} {...chevronProps} />;
         },
         DayButton: (dayButtonProps) => <CalendarDayButton locale={locale} {...dayButtonProps} />,
-        WeekNumber: ({ children, ...weekNumberProps }) => (
-          <td {...weekNumberProps}>
-            <div className="flex size-(--cell-size) items-center justify-center text-center">
-              {children}
-            </div>
-          </td>
-        ),
+        WeekNumber: ({ children, ...weekNumberProps }) => {
+          return (
+            <td {...weekNumberProps}>
+              <div className="flex size-(--cell-size) items-center justify-center text-center">
+                {children}
+              </div>
+            </td>
+          );
+        },
         ...components,
       }}
       {...props}
@@ -152,8 +154,8 @@ function CalendarDayButton({
   ...props
 }: React.ComponentProps<typeof DayButton> & { locale?: Partial<Locale> }) {
   const defaultClassNames = getDefaultClassNames();
-  const ref = React.useRef<HTMLButtonElement>(null);
 
+  const ref = React.useRef<HTMLButtonElement>(null);
   React.useEffect(() => {
     if (modifiers.focused) ref.current?.focus();
   }, [modifiers.focused]);

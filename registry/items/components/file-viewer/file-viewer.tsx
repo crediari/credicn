@@ -294,6 +294,7 @@ function FileViewer({
   renderPreview,
 }: FileViewerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useControllableState({
     value: controlledOpen,
     defaultValue: defaultOpen,
@@ -326,7 +327,10 @@ function FileViewer({
   useEffect(() => {
     const dialog = dialogRef.current;
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
+    if (open && !dialog.open) {
+      dialog.showModal();
+      closeButtonRef.current?.focus({ preventScroll: true });
+    }
     if (!open && dialog.open) dialog.close();
   }, [open]);
 
@@ -337,10 +341,16 @@ function FileViewer({
   useEffect(() => {
     setImageZoom(1);
     setImageRotation(0);
-  }, [safeIndex]);
+  }, [open, currentFile]);
 
   useEffect(() => {
-    if (!open || !currentFile) return undefined;
+    if (!open || !currentFile) {
+      setIsLoading(false);
+      setLoadError(null);
+      setResolvedSource(null);
+      setSourceUrl("");
+      return undefined;
+    }
 
     const controller = new AbortController();
     let objectUrl = "";
@@ -383,6 +393,8 @@ function FileViewer({
   const move = useCallback(
     (direction: -1 | 1) => {
       if (!files.length) return;
+      // Keep focus inside the dialog when changing file kinds removes the focused control.
+      closeButtonRef.current?.focus({ preventScroll: true });
       setActiveIndex((safeIndex + direction + files.length) % files.length);
     },
     [files.length, safeIndex, setActiveIndex],
@@ -392,25 +404,45 @@ function FileViewer({
     if (!open) return undefined;
 
     function handleKeyDown(event: KeyboardEvent) {
-      if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+      if (
+        event.defaultPrevented ||
+        event.ctrlKey ||
+        event.metaKey ||
+        event.altKey ||
+        (event.target instanceof Element &&
+          event.target.closest(
+            'input, textarea, select, [contenteditable]:not([contenteditable="false"]), audio, video, [role="slider"]',
+          ))
+      )
         return;
-      }
 
-      if (event.key === "ArrowLeft" && canNavigate) move(-1);
-      if (event.key === "ArrowRight" && canNavigate) move(1);
-      if (previewKind === "image" && (event.key === "+" || event.key === "=")) {
-        setImageZoom((value) => Math.min(value + 0.25, 4));
-      }
-      if (previewKind === "image" && event.key === "-") {
-        setImageZoom((value) => Math.max(value - 0.25, 0.25));
-      }
-      if (previewKind === "image" && event.key.toLowerCase() === "r") {
-        setImageRotation((value) => (value + 90) % 360);
+      if (event.key === "ArrowLeft" && canNavigate) {
+        event.preventDefault();
+        move(-1);
+      } else if (event.key === "ArrowRight" && canNavigate) {
+        event.preventDefault();
+        move(1);
+      } else if (previewKind === "image") {
+        if (event.key === "+" || event.key === "=") {
+          event.preventDefault();
+          setImageZoom((value) => Math.min(value + 0.25, 4));
+        } else if (event.key === "-") {
+          event.preventDefault();
+          setImageZoom((value) => Math.max(value - 0.25, 0.25));
+        } else if (event.key.toLowerCase() === "r") {
+          event.preventDefault();
+          setImageRotation((value) => (value + 90) % 360);
+        } else if (event.key === "0") {
+          event.preventDefault();
+          setImageZoom(1);
+          setImageRotation(0);
+        }
       }
     }
 
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    const dialog = dialogRef.current;
+    dialog?.addEventListener("keydown", handleKeyDown);
+    return () => dialog?.removeEventListener("keydown", handleKeyDown);
   }, [canNavigate, move, open, previewKind]);
 
   async function handleDownload() {
@@ -446,7 +478,7 @@ function FileViewer({
     <dialog
       aria-label={currentFile ? `Visualização de ${currentFile.name}` : "Visualizador de arquivos"}
       className={cn(
-        "fixed inset-0 z-50 m-0 hidden h-dvh max-h-none w-screen max-w-none bg-transparent p-0 text-foreground backdrop:bg-black/72 backdrop:backdrop-blur-sm open:flex",
+        "fixed inset-0 z-50 m-0 hidden h-dvh max-h-none w-screen max-w-none bg-transparent p-0 text-foreground backdrop:bg-background/95 open:flex",
         className,
       )}
       onCancel={(event) => {
@@ -456,8 +488,8 @@ function FileViewer({
       onClose={() => setOpen(false)}
       ref={dialogRef}
     >
-      <div className="flex min-h-0 w-full flex-col bg-background/96 shadow-2xl supports-[backdrop-filter]:bg-background/92">
-        <header className="flex min-h-16 shrink-0 items-center gap-3 border-b bg-background/80 px-3 py-2 backdrop-blur-xl sm:px-5">
+      <div className="flex min-h-0 w-full flex-col">
+        <header className="flex min-h-16 shrink-0 items-center gap-3 border-b border-border bg-background/90 px-3 py-2 text-foreground backdrop-blur-sm sm:px-5">
           <FileTypeIcon file={currentFile} className="size-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold sm:text-base">
@@ -480,6 +512,7 @@ function FileViewer({
               <>
                 <ViewerButton
                   label="Diminuir zoom"
+                  shortcut="-"
                   disabled={imageZoom <= 0.25}
                   onClick={() => setImageZoom((value) => Math.max(value - 0.25, 0.25))}
                 >
@@ -490,6 +523,7 @@ function FileViewer({
                 </span>
                 <ViewerButton
                   label="Aumentar zoom"
+                  shortcut="+"
                   disabled={imageZoom >= 4}
                   onClick={() => setImageZoom((value) => Math.min(value + 0.25, 4))}
                 >
@@ -497,12 +531,14 @@ function FileViewer({
                 </ViewerButton>
                 <ViewerButton
                   label="Girar imagem"
+                  shortcut="R"
                   onClick={() => setImageRotation((value) => (value + 90) % 360)}
                 >
                   <RotateCw />
                 </ViewerButton>
                 <ViewerButton
                   label="Redefinir visualização"
+                  shortcut="0"
                   className="hidden sm:inline-flex"
                   onClick={() => {
                     setImageZoom(1);
@@ -522,13 +558,18 @@ function FileViewer({
             >
               {isDownloading ? <LoaderCircle className="animate-spin" /> : <Download />}
             </ViewerButton>
-            <ViewerButton label={labels.close} onClick={() => setOpen(false)}>
+            <ViewerButton
+              ref={closeButtonRef}
+              label={labels.close}
+              shortcut="Escape"
+              onClick={() => setOpen(false)}
+            >
               <X />
             </ViewerButton>
           </div>
         </header>
 
-        <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden bg-muted/35">
+        <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
           {isLoading && (
             <ViewerMessage
               icon={<LoaderCircle className="animate-spin" />}
@@ -545,7 +586,9 @@ function FileViewer({
           )}
 
           {!isLoading && !loadError && currentFile && resolvedSource && sourceUrl && (
-            <div className="h-full w-full">{customPreview ?? renderBuiltInPreview()}</div>
+            <div className="flex h-full w-full items-center justify-center">
+              {customPreview ?? renderBuiltInPreview()}
+            </div>
           )}
 
           {!isLoading && !loadError && !currentFile && (
@@ -556,14 +599,16 @@ function FileViewer({
             <>
               <ViewerButton
                 label={labels.previous}
-                className="absolute top-1/2 left-3 z-10 size-11 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur-sm"
+                shortcut="ArrowLeft"
+                className="absolute top-1/2 left-3 z-10 size-11 -translate-y-1/2 rounded-full border border-border bg-background/90 text-foreground shadow-lg backdrop-blur-sm"
                 onClick={() => move(-1)}
               >
                 <ChevronLeft />
               </ViewerButton>
               <ViewerButton
                 label={labels.next}
-                className="absolute top-1/2 right-3 z-10 size-11 -translate-y-1/2 rounded-full border bg-background/90 shadow-lg backdrop-blur-sm"
+                shortcut="ArrowRight"
+                className="absolute top-1/2 right-3 z-10 size-11 -translate-y-1/2 rounded-full border border-border bg-background/90 text-foreground shadow-lg backdrop-blur-sm"
                 onClick={() => move(1)}
               >
                 <ChevronRight />
@@ -580,34 +625,35 @@ function FileViewer({
 
     if (previewKind === "image") {
       return (
-        <div className="flex h-full w-full items-center justify-center overflow-auto p-6 sm:p-12">
-          <img
-            alt={currentFile.name}
-            className="max-h-full max-w-full rounded-sm object-contain shadow-2xl transition-transform duration-200"
-            draggable={false}
-            src={sourceUrl}
-            style={{ transform: `scale(${imageZoom}) rotate(${imageRotation}deg)` }}
-          />
-        </div>
+        <ImagePreview
+          key={sourceUrl}
+          name={currentFile.name}
+          sourceUrl={sourceUrl}
+          zoom={imageZoom}
+          rotation={imageRotation}
+          onZoomChange={setImageZoom}
+        />
       );
     }
 
     if (previewKind === "pdf") {
       return (
-        <iframe
-          className="h-full w-full border-0 bg-white"
-          sandbox="allow-same-origin"
-          src={sourceUrl}
-          title={currentFile.name}
-        />
+        <div className="flex h-full w-full justify-center p-3 sm:p-6">
+          <iframe
+            className="h-full w-full max-w-6xl border-0 bg-background shadow-xl"
+            sandbox="allow-same-origin"
+            src={sourceUrl}
+            title={currentFile.name}
+          />
+        </div>
       );
     }
 
     if (previewKind === "video") {
       return (
-        <div className="flex h-full items-center justify-center p-6 sm:p-12">
+        <div className="flex h-full w-full items-center justify-center p-6 sm:p-12">
           <video
-            className="max-h-full max-w-full rounded-xl bg-black shadow-2xl"
+            className="max-h-full max-w-full rounded-xl bg-background shadow-2xl"
             controls
             src={sourceUrl}
           >
@@ -620,7 +666,7 @@ function FileViewer({
 
     if (previewKind === "audio") {
       return (
-        <div className="flex h-full items-center justify-center p-6">
+        <div className="flex h-full w-full items-center justify-center p-6">
           <div className="w-full max-w-xl rounded-3xl border bg-background p-8 text-center shadow-xl">
             <FileAudio className="mx-auto mb-5 size-14 text-muted-foreground" />
             <p className="mb-6 truncate font-medium">{currentFile.name}</p>
@@ -634,12 +680,18 @@ function FileViewer({
     }
 
     if (previewKind === "text") {
-      return <TextPreview source={resolvedSource} />;
+      return <TextPreview key={sourceUrl} source={resolvedSource} />;
     }
 
     if (previewKind === "spreadsheet") {
       return (
-        <SpreadsheetPreview extension={getExtension(currentFile.name)} source={resolvedSource} />
+        <div className="h-full w-full p-3 sm:p-6">
+          <SpreadsheetPreview
+            key={sourceUrl}
+            extension={getExtension(currentFile.name)}
+            source={resolvedSource}
+          />
+        </div>
       );
     }
 
@@ -650,7 +702,7 @@ function FileViewer({
         description={labels.unsupportedDescription}
         action={
           <button
-            className="inline-flex h-10 items-center justify-center gap-2 rounded-xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="inline-flex h-10 items-center justify-center gap-2 rounded-3xl bg-primary px-4 text-sm font-medium text-primary-foreground transition-opacity hover:opacity-90 disabled:opacity-50"
             disabled={isDownloading}
             onClick={() => void handleDownload()}
             type="button"
@@ -668,20 +720,171 @@ function FileViewer({
   }
 }
 
+function ImagePreview({
+  name,
+  sourceUrl,
+  zoom,
+  rotation,
+  onZoomChange,
+}: {
+  name: string;
+  sourceUrl: string;
+  zoom: number;
+  rotation: number;
+  onZoomChange: React.Dispatch<React.SetStateAction<number>>;
+}) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const [viewport, setViewport] = useState({ width: 0, height: 0 });
+  const [image, setImage] = useState({ width: 0, height: 0 });
+  const [failed, setFailed] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragRef = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    scrollLeft: number;
+    scrollTop: number;
+  } | null>(null);
+
+  useEffect(() => {
+    const viewportElement = viewportRef.current;
+    if (!viewportElement) return undefined;
+    const observer = new ResizeObserver(([entry]) => {
+      setViewport({ width: entry.contentRect.width, height: entry.contentRect.height });
+    });
+    observer.observe(viewportElement);
+
+    function handleWheel(event: WheelEvent) {
+      if (event.deltaY === 0) return;
+      event.preventDefault();
+      // Normalize mouse wheels and trackpads to a bounded, smooth zoom step.
+      const delta =
+        event.deltaY *
+        (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewportElement!.clientHeight : 1);
+      const factor = Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.0025);
+      onZoomChange((value) => Math.max(0.25, Math.min(4, value * factor)));
+    }
+
+    viewportElement.addEventListener("wheel", handleWheel, { passive: false });
+    return () => {
+      observer.disconnect();
+      viewportElement.removeEventListener("wheel", handleWheel);
+    };
+  }, [onZoomChange]);
+
+  const fit =
+    image.width && image.height
+      ? Math.min(
+          Math.max(1, viewport.width - 48) / image.width,
+          Math.max(1, viewport.height - 48) / image.height,
+          1,
+        )
+      : 1;
+  const width = image.width * fit;
+  const height = image.height * fit;
+  const rotated = rotation % 180 !== 0;
+  const canPan =
+    !failed &&
+    ((rotated ? height : width) * zoom + 48 > viewport.width ||
+      (rotated ? width : height) * zoom + 48 > viewport.height);
+
+  return (
+    <div
+      ref={viewportRef}
+      className={cn(
+        "h-full w-full overflow-auto overscroll-contain",
+        canPan && "touch-none select-none",
+        canPan && (isDragging ? "cursor-grabbing" : "cursor-grab"),
+      )}
+      onPointerDown={(event) => {
+        if (!canPan || !event.isPrimary || event.button !== 0) return;
+        event.preventDefault();
+        const element = event.currentTarget;
+        dragRef.current = {
+          pointerId: event.pointerId,
+          x: event.clientX,
+          y: event.clientY,
+          scrollLeft: element.scrollLeft,
+          scrollTop: element.scrollTop,
+        };
+        element.setPointerCapture(event.pointerId);
+        setIsDragging(true);
+      }}
+      onPointerMove={(event) => {
+        const drag = dragRef.current;
+        if (!drag || drag.pointerId !== event.pointerId) return;
+        event.currentTarget.scrollLeft = drag.scrollLeft - (event.clientX - drag.x);
+        event.currentTarget.scrollTop = drag.scrollTop - (event.clientY - drag.y);
+      }}
+      onPointerUp={(event) => {
+        if (dragRef.current?.pointerId !== event.pointerId) return;
+        dragRef.current = null;
+        setIsDragging(false);
+        event.currentTarget.releasePointerCapture(event.pointerId);
+      }}
+      onPointerCancel={() => {
+        dragRef.current = null;
+        setIsDragging(false);
+      }}
+      onLostPointerCapture={() => {
+        dragRef.current = null;
+        setIsDragging(false);
+      }}
+    >
+      {failed ? (
+        <div className="flex h-full items-center justify-center">
+          <ViewerMessage icon={<AlertCircle />} title="Não foi possível ler a imagem" />
+        </div>
+      ) : (
+        <div className="grid min-h-full w-max min-w-full place-items-center p-6">
+          <div
+            className="relative shrink-0"
+            style={{
+              width: (rotated ? height : width) * zoom,
+              height: (rotated ? width : height) * zoom,
+            }}
+          >
+            <img
+              alt={name}
+              className="absolute top-1/2 left-1/2 max-w-none object-contain shadow-2xl"
+              draggable={false}
+              src={sourceUrl}
+              onLoad={(event) =>
+                setImage({
+                  width: event.currentTarget.naturalWidth,
+                  height: event.currentTarget.naturalHeight,
+                })
+              }
+              onError={() => setFailed(true)}
+              style={{
+                width: width || undefined,
+                height: height || undefined,
+                transform: `translate(-50%, -50%) scale(${zoom}) rotate(${rotation}deg)`,
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function ViewerButton({
   label,
+  shortcut,
   className,
   children,
   ...props
-}: React.ButtonHTMLAttributes<HTMLButtonElement> & { label: string }) {
+}: React.ComponentProps<"button"> & { label: string; shortcut?: string }) {
   return (
     <button
       aria-label={label}
+      aria-keyshortcuts={shortcut}
       className={cn(
-        "inline-flex size-9 items-center justify-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-4",
+        "inline-flex size-9 items-center justify-center rounded-full text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring disabled:pointer-events-none disabled:opacity-40 [&_svg]:size-4",
         className,
       )}
-      title={label}
+      title={shortcut ? `${label} (${shortcut})` : label}
       type="button"
       {...props}
     >
@@ -703,7 +906,7 @@ function ViewerMessage({
 }) {
   return (
     <div className="mx-6 flex max-w-md flex-col items-center rounded-3xl border bg-background/95 p-8 text-center shadow-xl">
-      <div className="mb-4 grid size-14 place-items-center rounded-2xl bg-muted text-muted-foreground [&_svg]:size-7">
+      <div className="mb-4 grid size-14 place-items-center rounded-3xl bg-muted text-muted-foreground [&_svg]:size-7">
         {icon}
       </div>
       <p className="font-semibold">{title}</p>
@@ -762,7 +965,7 @@ function TextPreview({ source }: { source: FileSource }) {
   }
 
   return (
-    <div className="h-full overflow-auto p-4 sm:p-8">
+    <div className="h-full w-full overflow-auto p-4 sm:p-8">
       <pre className="mx-auto min-h-full max-w-6xl overflow-x-auto rounded-2xl border bg-background p-5 font-mono text-xs leading-relaxed shadow-sm sm:text-sm">
         <code>{content}</code>
       </pre>
@@ -855,7 +1058,7 @@ function SpreadsheetPreview({ source, extension }: { source: FileSource; extensi
   }
 
   return (
-    <div className="flex h-full min-h-0 flex-col bg-background">
+    <div className="mx-auto flex h-full min-h-0 max-w-6xl flex-col overflow-hidden rounded-xl border bg-background shadow-xl">
       <div className="min-h-0 flex-1 overflow-auto">
         <table className="w-max min-w-full border-separate border-spacing-0 text-xs">
           <thead className="sticky top-0 z-10 bg-muted">

@@ -10,7 +10,6 @@ import {
 import type { ComponentType, ReactNode, SVGProps } from "react";
 
 import { Button } from "@/components/ui/button";
-
 type ErrorPageVariant =
   | "generic"
   | "not-found"
@@ -19,13 +18,11 @@ type ErrorPageVariant =
   | "unauthorized"
   | "offline"
   | "maintenance";
-
 type ErrorPageButton = {
   label: string;
   url: string;
   variant?: "outline" | "default";
 };
-
 type GenericErrorPageProps = {
   variant?: ErrorPageVariant;
   title?: string;
@@ -34,7 +31,6 @@ type GenericErrorPageProps = {
   illustration?: ReactNode;
   className?: string;
 };
-
 type VariantContent = {
   code: string;
   eyebrow: string;
@@ -42,7 +38,6 @@ type VariantContent = {
   description: string;
   icon: ComponentType<SVGProps<SVGSVGElement>>;
 };
-
 const variantContent: Record<ErrorPageVariant, VariantContent> = {
   generic: {
     code: "Ops",
@@ -98,14 +93,12 @@ const variantContent: Record<ErrorPageVariant, VariantContent> = {
     icon: Wrench,
   },
 };
-
 function ErrorIllustration({ variant }: { variant: ErrorPageVariant }) {
   const content = variantContent[variant];
   const Icon = content.icon;
-
   return (
     <div
-      className="relative mx-auto flex aspect-[4/3] w-full max-w-sm items-center justify-center"
+      className="relative mx-auto flex aspect-4/3 w-full max-w-sm items-center justify-center"
       aria-hidden="true"
     >
       <div className="absolute inset-x-8 bottom-8 h-8 rounded-[50%] bg-muted/70 blur-xl" />
@@ -131,13 +124,13 @@ function ErrorIllustration({ variant }: { variant: ErrorPageVariant }) {
         <path d="M64 226H297" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
       </svg>
 
-      <div className="relative flex size-44 rotate-[-3deg] flex-col items-center justify-center rounded-[2.5rem] border bg-card shadow-xl shadow-foreground/5">
+      <div className="relative flex size-44 -rotate-3 flex-col items-center justify-center rounded-[2.5rem] border bg-card shadow-xl shadow-foreground/5">
         <div className="absolute -top-4 -right-4 flex size-14 rotate-12 items-center justify-center rounded-2xl border bg-background shadow-sm">
           <span className="text-xs font-bold tracking-tight text-muted-foreground">
             {content.code}
           </span>
         </div>
-        <div className="flex size-20 items-center justify-center rounded-3xl bg-primary/10 text-primary ring-8 ring-primary/5">
+        <div className="flex size-20 items-center justify-center rounded-3xl bg-muted text-primary ring-8 ring-primary/5 dark:text-muted-foreground">
           <Icon className="size-10" strokeWidth={1.7} />
         </div>
         <div className="mt-7 h-2 w-20 rounded-full bg-muted" />
@@ -146,7 +139,6 @@ function ErrorIllustration({ variant }: { variant: ErrorPageVariant }) {
     </div>
   );
 }
-
 function GenericErrorPage({
   variant = "generic",
   title,
@@ -157,7 +149,6 @@ function GenericErrorPage({
 }: GenericErrorPageProps) {
   const content = variantContent[variant];
   const hasButtons = Boolean(buttons?.length);
-
   return (
     <main
       className={`flex min-h-full w-full items-center justify-center px-6 py-12 sm:px-10 ${className ?? ""}`}
@@ -182,9 +173,9 @@ function GenericErrorPage({
                   key={`${button.url}-${button.label}`}
                   variant={button.variant ?? (index === 0 ? "default" : "outline")}
                   size="lg"
-                  render={<a href={button.url} />}
+                  asChild
                 >
-                  {button.label}
+                  <a href={button.url}>{button.label}</a>
                 </Button>
               ))}
             </div>
@@ -198,7 +189,6 @@ function GenericErrorPage({
     </main>
   );
 }
-
 export {
   GenericErrorPage,
   type ErrorPageButton,

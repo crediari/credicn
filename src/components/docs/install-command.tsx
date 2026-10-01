@@ -1,5 +1,4 @@
 "use client";
-
 import { IconChevronDown } from "@tabler/icons-react";
 import * as React from "react";
 
@@ -15,11 +14,9 @@ import {
   DropdownMenuRadioItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-
 const PACKAGE_MANAGER_STORAGE_KEY = "preferred-pm";
 const PACKAGE_MANAGER_CHANGE_EVENT = "preferred-pm-change";
 const DEFAULT_PACKAGE_MANAGER = "npm";
-
 const packageManagers = [
   {
     value: "npm",
@@ -182,29 +179,24 @@ const packageManagers = [
     ),
   },
 ] as const;
-
 export type PackageManager = (typeof packageManagers)[number]["value"];
 type PackageManagerPreference = readonly [
   PackageManager,
   (nextPackageManager: PackageManager) => void,
 ];
-
 type PackageManagerCommandProps = {
   getCommand: (packageManager: PackageManager) => string;
   copyLabel: string;
   className?: string;
 };
-
 type InstallCommandProps = {
   item: {
     name: string;
   };
   className?: string;
 };
-
 export function getInstallCommand(itemName: string, packageManager: PackageManager): string {
   const registryItemUrl = getCanonicalRegistryItemUrl(itemName);
-
   switch (packageManager) {
     case "bun":
       return `bunx --bun shadcn@latest add ${registryItemUrl}`;
@@ -219,21 +211,19 @@ export function getInstallCommand(itemName: string, packageManager: PackageManag
     case "vite-plus":
       return `vpx shadcn@latest add ${registryItemUrl}`;
   }
-
   return assertNever(packageManager);
 }
-
 export function getPackageInstallCommand(
   packages: readonly string[],
   packageManager: PackageManager,
-  options: { dev?: boolean } = {},
+  options: {
+    dev?: boolean;
+  } = {},
 ): string {
   const packageNames = packages.map((packageName) => packageName.trim()).filter(Boolean);
-
   if (packageNames.length === 0) {
     return "";
   }
-
   switch (packageManager) {
     case "bun":
       return joinCommand(["bun", "add", options.dev ? "-d" : "", ...packageNames]);
@@ -253,10 +243,8 @@ export function getPackageInstallCommand(
     case "vite-plus":
       return joinCommand(["vp", "install", options.dev ? "-D" : "", ...packageNames]);
   }
-
   return assertNever(packageManager);
 }
-
 export function getPackageInstallCommands(
   item: {
     dependencies?: readonly string[];
@@ -269,35 +257,28 @@ export function getPackageInstallCommands(
     getPackageInstallCommand(item.devDependencies ?? [], packageManager, { dev: true }),
   ].filter((command) => command.length > 0);
 }
-
 function setPackageManagerPreference(packageManager: PackageManager): void {
   if (typeof window === "undefined") {
     return;
   }
-
   try {
     window.localStorage.setItem(PACKAGE_MANAGER_STORAGE_KEY, packageManager);
   } catch {
     // Ignore storage failures; the in-memory UI state still updates.
   }
-
   window.dispatchEvent(new Event(PACKAGE_MANAGER_CHANGE_EVENT));
 }
-
 function getPackageManagerPreference(): PackageManager {
   if (typeof window === "undefined") {
     return DEFAULT_PACKAGE_MANAGER;
   }
-
   try {
     const storedPackageManager = window.localStorage.getItem(PACKAGE_MANAGER_STORAGE_KEY);
-
     return isPackageManager(storedPackageManager) ? storedPackageManager : DEFAULT_PACKAGE_MANAGER;
   } catch {
     return DEFAULT_PACKAGE_MANAGER;
   }
 }
-
 export function InstallCommand({ item, className }: InstallCommandProps) {
   return (
     <PackageManagerCommand
@@ -307,7 +288,6 @@ export function InstallCommand({ item, className }: InstallCommandProps) {
     />
   );
 }
-
 export function PackageManagerCommand({
   className,
   copyLabel,
@@ -318,15 +298,16 @@ export function PackageManagerCommand({
     packageManagers.find((option) => option.value === packageManager) ?? packageManagers[0];
   const command = getCommand(packageManager);
   const SelectedLogo = selectedPackageManager.logo;
-
   return (
     <div className={cn("min-w-0 overflow-hidden rounded-lg border bg-code", className)}>
       <div className="flex min-h-10 items-center justify-between gap-2 border-b px-2">
         <DropdownMenu>
-          <DropdownMenuTrigger render={<Button variant="ghost" size="sm" />}>
-            <SelectedLogo data-icon="inline-start" aria-hidden="true" />
-            {selectedPackageManager.label}
-            <IconChevronDown data-icon="inline-end" aria-hidden="true" />
+          <DropdownMenuTrigger asChild>
+            <Button variant="ghost" size="sm">
+              <SelectedLogo data-icon="inline-start" aria-hidden="true" />
+              {selectedPackageManager.label}
+              <IconChevronDown data-icon="inline-end" aria-hidden="true" />
+            </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="min-w-40">
             <DropdownMenuGroup>
@@ -340,12 +321,10 @@ export function PackageManagerCommand({
               >
                 {packageManagers.map((option) => {
                   const Logo = option.logo;
-
                   return (
                     <DropdownMenuRadioItem
                       key={option.value}
                       value={option.value}
-                      closeOnClick
                       className="cursor-pointer"
                     >
                       <Logo data-icon="inline-start" aria-hidden="true" />
@@ -373,49 +352,39 @@ export function PackageManagerCommand({
     </div>
   );
 }
-
 function usePackageManagerPreference(): PackageManagerPreference {
   const [packageManager, setPackageManagerState] = React.useState<PackageManager>(
     getPackageManagerPreference,
   );
-
   React.useEffect(() => {
     function syncPackageManagerPreference() {
       setPackageManagerState(getPackageManagerPreference());
     }
-
     function handleStorage(event: StorageEvent) {
       if (event.key === PACKAGE_MANAGER_STORAGE_KEY) {
         syncPackageManagerPreference();
       }
     }
-
     syncPackageManagerPreference();
     window.addEventListener("storage", handleStorage);
     window.addEventListener(PACKAGE_MANAGER_CHANGE_EVENT, syncPackageManagerPreference);
-
     return () => {
       window.removeEventListener("storage", handleStorage);
       window.removeEventListener(PACKAGE_MANAGER_CHANGE_EVENT, syncPackageManagerPreference);
     };
   }, []);
-
   const setPackageManager = React.useCallback((nextPackageManager: PackageManager) => {
     setPackageManagerState(nextPackageManager);
     setPackageManagerPreference(nextPackageManager);
   }, []);
-
   return [packageManager, setPackageManager] as const;
 }
-
 function isPackageManager(value: string | null): value is PackageManager {
   return packageManagers.some((option) => option.value === value);
 }
-
 function assertNever(value: never): never {
   throw new Error(`Unhandled package manager: ${String(value)}`);
 }
-
 function joinCommand(parts: readonly string[]): string {
   return parts.filter(Boolean).join(" ");
 }

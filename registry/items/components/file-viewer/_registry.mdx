@@ -13,7 +13,8 @@ files:
 
 Visualize arquivos em um diálogo responsivo e acessível. O componente suporta imagens, PDF,
 vídeo, áudio, texto/código, CSV, TSV, XLSX e XLSM, além de navegação por teclado, download,
-zoom e rotação de imagens. Textos e planilhas são processados localmente no navegador.
+zoom por scroll e rotação de imagens. O fundo usa um overlay semitransparente baseado no token `background`,
+acompanhando o tema claro ou escuro da aplicação. Textos e planilhas são processados localmente no navegador.
 Enquanto o diálogo está aberto, o scroll da página é bloqueado e restaurado na posição anterior
 ao fechar, inclusive em navegadores móveis.
 
@@ -52,3 +53,29 @@ Você também pode fornecer `source` em cada arquivo como URL, `Blob`, `ArrayBuf
 `Uint8Array`. Use `renderPreview` para adicionar formatos específicos do seu app e
 `onDownload` quando o download exigir uma API própria. Arquivos XLS legados devem ser
 convertidos para XLSX ou tratados por um renderizador customizado.
+
+
+### Atalhos de teclado
+
+| Tecla | Ação |
+| --- | --- |
+| `Esc` | Fechar o visualizador |
+| `←` / `→` | Arquivo anterior / próximo (navegação circular) |
+| `+` ou `=` / `-` | Aumentar / diminuir zoom da imagem |
+| `R` | Girar a imagem em 90° |
+| `0` | Redefinir zoom e rotação |
+
+Nas imagens, o scroll do mouse ou trackpad ajusta o zoom entre 25% e 400%.
+Clique e arraste a imagem ampliada para explorar qualquer direção; o cursor de mão indica
+quando a imagem pode ser movida. As barras de rolagem também continuam disponíveis. Ao trocar de arquivo ou
+reabrir o visualizador, o zoom e a rotação são redefinidos. Os atalhos respeitam campos
+editáveis, controles de mídia e combinações com Ctrl, Alt ou Cmd. Quando o foco está no
+leitor nativo de PDF, os atalhos seguem o comportamento do próprio navegador.
+
+### Cenários da demonstração
+
+O preview inclui imagens horizontais, verticais e transparentes; PDF de duas páginas;
+áudio WAV e vídeo MP4; CSV simples e com campos especiais; TSV; Excel com múltiplas abas,
+datas e fórmulas; Markdown, JSON e logs longos. Também permite testar arquivo vazio,
+formato sem pré-visualização, carregamento lento, falha de carregamento, imagem e planilha
+corrompidas e uma galeria sem arquivos. Os arquivos e dados são fictícios e locais.

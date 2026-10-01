@@ -17,22 +17,21 @@ import { ComponentPreview } from "./component-preview";
 import { DocsPageHeader } from "./docs-page-header";
 import { InstallCommand } from "./install-command";
 import { ManualInstallation } from "./manual-install";
-
 type RegistryItemDocProps = {
   item: RegistryItemDetail;
 };
-
 export function RegistryItemDoc({ item }: RegistryItemDocProps) {
   const section = getRegistrySectionForType(item.type);
   const pagePath = getRegistryItemRoutePath(item);
-
   return (
     <article className="flex min-w-0 flex-col gap-8">
       <Breadcrumb>
         <BreadcrumbList>
           <BreadcrumbItem>
-            <BreadcrumbLink render={<Link to="/$section" params={{ section: section.id }} />}>
-              {section.title}
+            <BreadcrumbLink asChild>
+              <Link to="/$section" params={{ section: section.id }}>
+                {section.title}
+              </Link>
             </BreadcrumbLink>
           </BreadcrumbItem>
           <BreadcrumbSeparator />

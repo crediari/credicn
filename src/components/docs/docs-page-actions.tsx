@@ -1,5 +1,4 @@
 "use client";
-
 import { IconChevronDown } from "@tabler/icons-react";
 import type { ReactElement, SVGProps } from "react";
 
@@ -15,7 +14,6 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
-
 type DocsPageActionsProps = {
   markdownPath: string;
   pageDescription: string;
@@ -24,23 +22,19 @@ type DocsPageActionsProps = {
   registryItemJsonUrl?: string;
   className?: string;
 };
-
 type DocsPageActionUrls = Pick<
   DocsPageActionsProps,
   "markdownPath" | "pageDescription" | "pageTitle" | "pageUrl" | "registryItemJsonUrl"
 >;
-
 type DocsPageActionLink = {
   label: string;
   href: string;
 };
-
 type MenuItem = {
   label: string;
   href: (urls: DocsPageActionUrls) => string | null;
   icon: (props: SVGProps<SVGSVGElement>) => ReactElement;
 };
-
 const menuItems: readonly MenuItem[] = [
   {
     label: "View as Markdown",
@@ -75,7 +69,6 @@ const menuItems: readonly MenuItem[] = [
     icon: PerplexityIcon,
   },
 ];
-
 export function DocsPageActions({
   markdownPath,
   pageDescription,
@@ -101,9 +94,11 @@ export function DocsPageActions({
         className="px-2.5!"
       />
       <DropdownMenu>
-        <DropdownMenuTrigger render={<Button size="icon" variant="outline" />}>
-          <IconChevronDown data-icon aria-hidden="true" />
-          <span className="sr-only">Open page actions menu</span>
+        <DropdownMenuTrigger asChild>
+          <Button size="icon" variant="outline">
+            <IconChevronDown data-icon aria-hidden="true" />
+            <span className="sr-only">Open page actions menu</span>
+          </Button>
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end" className="w-max min-w-44">
           <DropdownMenuGroup>
@@ -116,19 +111,19 @@ export function DocsPageActions({
                 pageUrl,
                 registryItemJsonUrl,
               });
-
               if (!href) {
                 return null;
               }
-
               return (
                 <DropdownMenuItem
                   key={item.label}
                   className="cursor-pointer gap-2 px-2 py-1.5 [&_svg:not([class*='text-'])]:text-muted-foreground"
-                  render={<a href={href} target="_blank" rel="noopener noreferrer" />}
+                  asChild
                 >
-                  <Icon aria-hidden="true" data-icon="inline-start" />
-                  <span>{item.label}</span>
+                  <a href={href} target="_blank" rel="noopener noreferrer">
+                    <Icon aria-hidden="true" data-icon="inline-start" />
+                    <span>{item.label}</span>
+                  </a>
                 </DropdownMenuItem>
               );
             })}
@@ -138,40 +133,31 @@ export function DocsPageActions({
     </ButtonGroup>
   );
 }
-
 export function getDocsPageActionLinks(urls: DocsPageActionUrls): DocsPageActionLink[] {
   return menuItems.flatMap((item) => {
     const href = item.href(urls);
-
     return href ? [{ label: item.label, href }] : [];
   });
 }
-
 export async function getDocsPageMarkdown(markdownPath: string): Promise<string> {
   const response = await fetch(markdownPath, {
     headers: {
       Accept: "text/markdown",
     },
   });
-
   if (!response.ok) {
     throw new Error("Page markdown is unavailable.");
   }
-
   return response.text();
 }
-
 function getPromptUrl(baseUrl: string, url: string): string {
   const promptUrl = new URL(baseUrl);
   const prompt = `I have questions about this documentation page for the shadcn-compatible ${siteConfig.name} registry: ${url}
 
 Study it and let me know when you're ready to answer my questions.`;
-
   promptUrl.searchParams.set("q", prompt);
-
   return promptUrl.toString();
 }
-
 function getV0RegistryItemUrl({
   prompt,
   registryItemJsonUrl,
@@ -182,14 +168,11 @@ function getV0RegistryItemUrl({
   title: string;
 }): string {
   const openUrl = new URL("https://v0.app/chat/api/open");
-
   openUrl.searchParams.set("url", registryItemJsonUrl);
   openUrl.searchParams.set("title", title.trim());
   openUrl.searchParams.set("prompt", prompt.trim());
-
   return openUrl.toString();
 }
-
 function MarkdownIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg strokeLinejoin="round" viewBox="0 0 22 16" {...props}>
@@ -202,7 +185,6 @@ function MarkdownIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-
 function V0Icon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" {...props}>
@@ -215,7 +197,6 @@ function V0Icon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-
 function ChatGPTIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
@@ -226,7 +207,6 @@ function ChatGPTIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-
 function ClaudeIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" {...props}>
@@ -237,7 +217,6 @@ function ClaudeIcon(props: SVGProps<SVGSVGElement>) {
     </svg>
   );
 }
-
 function PerplexityIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" {...props}>

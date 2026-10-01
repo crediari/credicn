@@ -14,7 +14,6 @@ import { getJsonLdScripts, getWebSiteJsonLd } from "../lib/seo";
 import { siteConfig } from "../lib/site-config";
 
 import appCss from "../styles.css?url";
-
 export const Route = createRootRoute({
   headers: () => ({
     Vary: "Accept, User-Agent",
@@ -57,7 +56,6 @@ export const Route = createRootRoute({
   notFoundComponent: GlobalNotFoundRoute,
   shellComponent: RootDocument,
 });
-
 function RootRoute() {
   return (
     <ThemeProvider>
@@ -73,7 +71,6 @@ function RootRoute() {
     </ThemeProvider>
   );
 }
-
 function GlobalNotFoundRoute() {
   return (
     <main className="flex min-h-[calc(100svh-9rem)] items-center px-4 py-16 sm:px-6 lg:px-8">
@@ -87,9 +84,11 @@ function GlobalNotFoundRoute() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
-            <Button size="lg" variant="outline" nativeButton={false} render={<Link to="/" />}>
-              <IconHome data-icon="inline-start" />
-              Go home
+            <Button size="lg" variant="outline" asChild>
+              <Link to="/">
+                <IconHome data-icon="inline-start" />
+                Go home
+              </Link>
             </Button>
           </div>
         </section>
@@ -118,7 +117,6 @@ function GlobalNotFoundRoute() {
     </main>
   );
 }
-
 function NotFoundPathLink({
   to,
   label,
@@ -141,7 +139,6 @@ function NotFoundPathLink({
     </Link>
   );
 }
-
 function NotFoundSectionLink({
   section,
   label,
@@ -165,7 +162,6 @@ function NotFoundSectionLink({
     </Link>
   );
 }
-
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning>

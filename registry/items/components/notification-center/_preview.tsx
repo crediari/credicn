@@ -78,7 +78,7 @@ export function Preview() {
   }
 
   return (
-    <div className="flex min-h-48 w-full max-w-2xl flex-col items-center justify-center gap-4 rounded-2xl border bg-card p-8">
+    <div className="flex w-full flex-col items-center justify-center gap-4">
       <NotificationCenter
         notifications={notifications}
         preferences={preferences}

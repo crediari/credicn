@@ -6,7 +6,6 @@ import { Button } from "@/components/ui/button";
 
 import { getSeoHead } from "../lib/seo";
 import { siteConfig } from "../lib/site-config";
-
 export const Route = createFileRoute("/")({
   head: () =>
     getSeoHead({
@@ -16,7 +15,6 @@ export const Route = createFileRoute("/")({
     }),
   component: HomePage,
 });
-
 function HomePage() {
   return (
     <div className="relative flex min-h-0 flex-1 flex-col items-center justify-center px-4 py-16">
@@ -26,22 +24,17 @@ function HomePage() {
         <h1 className="sr-only">{siteConfig.name}</h1>
         <p className="max-w-lg text-base text-muted-foreground">{siteConfig.description}</p>
         <div className="flex items-center gap-3">
-          <Button
-            size="lg"
-            nativeButton={false}
-            render={<Link to="/$section" params={{ section: "components" }} />}
-          >
-            <IconBlocks data-icon="inline-start" />
-            Browse
+          <Button size="lg" asChild>
+            <Link to="/$section" params={{ section: "components" }}>
+              <IconBlocks data-icon="inline-start" />
+              Browse
+            </Link>
           </Button>
-          <Button
-            variant="outline"
-            size="lg"
-            nativeButton={false}
-            render={<a href={siteConfig.repositoryUrl} target="_blank" rel="noopener noreferrer" />}
-          >
-            <IconBrandGithub data-icon="inline-start" />
-            GitHub
+          <Button variant="outline" size="lg" asChild>
+            <a href={siteConfig.repositoryUrl} target="_blank" rel="noopener noreferrer">
+              <IconBrandGithub data-icon="inline-start" />
+              GitHub
+            </a>
           </Button>
         </div>
       </div>

@@ -83,3 +83,23 @@ List authored source files with paths relative to the item `_registry.mdx` file.
 Use `localRegistryDependencies` for dependencies on other local registry items.
 
 After editing an item, run `vp check --fix` on touched files and `bun --bun ./scripts/doctor.ts`. Run `vp build` when registry docs, routes, JSON output, catalog loading, or source loading changed.
+
+## Temas e instalação
+
+Os componentes publicados herdam o tema da aplicação de destino. As superfícies, textos,
+bordas, estados de foco e cores de destaque usam os tokens semânticos do shadcn/ui, como
+`background`, `foreground`, `primary`, `muted`, `border` e `ring`. Nenhum item instala a paleta,
+a fonte ou o CSS global do Credicn.
+
+O Credicn usa `radix-luma`, a fonte Inter e os tokens claros e escuros do template do ecossistema
+para que as prévias correspondam aos apps. As dependências shadcn declaradas em cada item são
+resolvidas pelo CLI conforme o `components.json` da aplicação que recebe a instalação.
+
+Os componentes compostos usam a API Radix (`asChild` para compor triggers, botões e links).
+Instale-os em projetos shadcn com primitivas Radix; outros estilos visuais Radix podem usar os
+mesmos componentes e seus próprios tokens. Projetos com primitivas Base UI precisam adaptar
+a composição para a API correspondente.
+
+Ao criar ou alterar um item, use os componentes shadcn da aplicação para controles comuns e
+declare suas dependências no `_registry.mdx`. Use utilitários Tailwind padrão e tokens
+semânticos, sem depender de classes exclusivas de `src/styles.css` ou fixar cores do ecossistema.

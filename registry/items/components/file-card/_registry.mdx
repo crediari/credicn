@@ -4,7 +4,8 @@ type: registry:ui
 title: File Card
 description: Displays a file or image attachment with media, metadata, upload state, and actions.
 dependencies:
-  - "@base-ui/react"
+  - radix-ui
+  - class-variance-authority
 registryDependencies:
   - button
 ---
@@ -59,7 +60,7 @@ Use `FileCardGroup` para organizar vários anexos em uma linha horizontal com sc
 ## Estados
 
 O prop `state` aceita `idle`, `uploading`, `processing`, `error` e `done`. Os estados de envio e
-processamento aplicam shimmer ao título; erros recebem tratamento destrutivo; e o estado inicial
+processamento aplicam uma animação de pulso ao título; erros recebem tratamento destrutivo; e o estado inicial
 usa uma borda tracejada. Mantenha a causa do erro em `FileCardDescription` para que o estado não
 dependa apenas de cor.
 
@@ -95,7 +96,7 @@ para empilhar mídia e conteúdo.
 ## Tamanhos e trigger
 
 `size` aceita `default`, `sm` e `xs`. `FileCardTrigger` cria uma área interativa sobre o card sem
-bloquear as ações. Ele renderiza um botão por padrão ou outro elemento por meio do prop `render`.
+bloquear as ações. Ele renderiza um botão por padrão ou outro elemento por meio do prop `asChild`.
 Sempre forneça um `aria-label` tanto ao trigger quanto às ações somente com ícone.
 
 ```tsx

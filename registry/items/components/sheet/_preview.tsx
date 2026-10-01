@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 
 import {
@@ -12,11 +11,12 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "./sheet";
-
 export function Preview() {
   return (
     <Sheet>
-      <SheetTrigger render={<Button variant="outline" />}>Abrir painel</SheetTrigger>
+      <SheetTrigger asChild>
+        <Button variant="outline">Abrir painel</Button>
+      </SheetTrigger>
       <SheetContent>
         <SheetHeader>
           <SheetTitle>Configurações</SheetTitle>
@@ -28,7 +28,9 @@ export function Preview() {
         </div>
 
         <SheetFooter>
-          <SheetClose render={<Button variant="outline" />}>Cancelar</SheetClose>
+          <SheetClose asChild>
+            <Button variant="outline">Cancelar</Button>
+          </SheetClose>
           <Button>Salvar alterações</Button>
         </SheetFooter>
       </SheetContent>

@@ -89,6 +89,8 @@ Keep previews client-safe: static data, local state, and events are fine; avoid 
 - Replace app data access with props, sample data, or small exported fixtures.
 - Remove dependencies on app routing, auth, database clients, analytics, env vars, and server-only helpers unless the item intentionally installs those integrations.
 - Preserve visual behavior unless the user asks for a redesign.
+- Inherit the consumer theme through standard shadcn semantic tokens; do not publish fixed palette colors, app-only CSS utilities, fonts, or global theme overrides with components.
+- Use Radix `asChild` composition for shadcn dependencies. The docs app previews use the ecosystem's `radix-luma` style; installing an item must not install that preview theme.
 - Keep relative imports inside the item folder relative.
 - Publish shared helpers as separate `registry:lib` files only when that improves install clarity.
 

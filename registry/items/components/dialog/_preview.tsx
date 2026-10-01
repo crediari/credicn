@@ -1,5 +1,4 @@
 "use client";
-
 import { Button } from "@/components/ui/button";
 
 import {
@@ -11,11 +10,12 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "./dialog";
-
 export function Preview() {
   return (
     <Dialog>
-      <DialogTrigger render={<Button variant="outline" />}>Abrir diálogo</DialogTrigger>
+      <DialogTrigger asChild>
+        <Button variant="outline">Abrir diálogo</Button>
+      </DialogTrigger>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Confirmar ação</DialogTitle>

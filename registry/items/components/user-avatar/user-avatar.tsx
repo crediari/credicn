@@ -51,7 +51,7 @@ function UserAvatar({
     >
       <AvatarFallback
         className={cn(
-          "bg-linear-to-br from-emerald-300 via-emerald-800 to-emerald-900 font-semibold text-primary-foreground",
+          "bg-primary bg-linear-to-br from-emerald-300 via-emerald-800 to-emerald-900 font-semibold text-primary-foreground",
           bgColor,
           textSize,
         )}
@@ -99,7 +99,7 @@ function UserAvatarGroup({
         <AvatarGroupCount
           aria-label={overflowLabel}
           className={cn(
-            "z-10 border border-border bg-muted shadow-xs dark:border-emerald-800 dark:bg-emerald-950 dark:text-emerald-100",
+            "z-10 border border-border bg-muted text-muted-foreground shadow-xs",
             overflowClassName,
           )}
           title={overflowLabel}

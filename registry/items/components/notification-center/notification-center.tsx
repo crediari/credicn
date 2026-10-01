@@ -1,5 +1,4 @@
 "use client";
-
 import {
   AlertTriangle,
   Bell,
@@ -29,9 +28,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Switch } from "@/components/ui/switch";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { cn } from "@/lib/utils";
-
 type NotificationCenterTone = "default" | "info" | "success" | "warning" | "error";
-
 type NotificationCenterItem = {
   id: string;
   title: string;
@@ -43,7 +40,6 @@ type NotificationCenterItem = {
   metadata?: string;
   href?: string;
 };
-
 type NotificationCenterPreference = {
   id: string;
   label: string;
@@ -51,7 +47,6 @@ type NotificationCenterPreference = {
   enabled: boolean;
   disabled?: boolean;
 };
-
 type NotificationCenterProps = {
   notifications: NotificationCenterItem[];
   preferences?: NotificationCenterPreference[];
@@ -82,8 +77,13 @@ type NotificationCenterProps = {
   className?: string;
   triggerClassName?: string;
 };
-
-const toneStyles: Record<NotificationCenterTone, { icon: LucideIcon; className: string }> = {
+const toneStyles: Record<
+  NotificationCenterTone,
+  {
+    icon: LucideIcon;
+    className: string;
+  }
+> = {
   default: { icon: Bell, className: "border-border bg-muted text-muted-foreground" },
   info: { icon: Info, className: "border-primary/20 bg-primary/10 text-primary" },
   success: { icon: Check, className: "border-primary/20 bg-primary/10 text-primary" },
@@ -96,7 +96,6 @@ const toneStyles: Record<NotificationCenterTone, { icon: LucideIcon; className: 
     className: "border-destructive/20 bg-destructive/10 text-destructive",
   },
 };
-
 function NotificationCenter({
   notifications,
   preferences = [],
@@ -139,45 +138,37 @@ function NotificationCenter({
   const [internalOpen, setInternalOpen] = React.useState(defaultOpen ?? false);
   const isControlled = open !== undefined;
   const resolvedOpen = isControlled ? open : internalOpen;
-
   function handleOpenChange(nextOpen: boolean) {
     if (!isControlled) setInternalOpen(nextOpen);
     onOpenChange?.(nextOpen);
   }
-
   function handleNotificationOpen(notification: NotificationCenterItem) {
     if (!notification.read) void onMarkAsRead?.(notification);
     onNotificationOpen?.(notification);
     if (closeOnNotificationOpen) handleOpenChange(false);
   }
-
   function getTimestamp(createdAt: NotificationCenterItem["createdAt"]) {
     return formatTimestamp?.(createdAt) ?? formatNotificationTimestamp(createdAt, locale);
   }
-
   return (
     <Dialog open={resolvedOpen} onOpenChange={handleOpenChange}>
-      <DialogTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="icon"
-            className={cn("relative rounded-full", triggerClassName)}
-            aria-label={
-              unreadCount > 0 ? `${triggerLabel}: ${unreadCount} não lidas` : triggerLabel
-            }
-          />
-        }
-      >
-        <Bell />
-        {unreadCount > 0 && (
-          <Badge
-            aria-hidden="true"
-            className="pointer-events-none absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1 text-[10px] tabular-nums"
-          >
-            {unreadCount > 99 ? "99+" : unreadCount}
-          </Badge>
-        )}
+      <DialogTrigger asChild>
+        <Button
+          variant="ghost"
+          size="icon"
+          className={cn("relative rounded-full", triggerClassName)}
+          aria-label={unreadCount > 0 ? `${triggerLabel}: ${unreadCount} não lidas` : triggerLabel}
+        >
+          <Bell />
+          {unreadCount > 0 && (
+            <Badge
+              aria-hidden="true"
+              className="pointer-events-none absolute -top-1.5 -right-1.5 h-5 min-w-5 px-1 text-[10px] tabular-nums"
+            >
+              {unreadCount > 99 ? "99+" : unreadCount}
+            </Badge>
+          )}
+        </Button>
       </DialogTrigger>
 
       <DialogContent className={cn("max-w-lg! gap-0 overflow-hidden p-0", className)}>
@@ -285,7 +276,6 @@ function NotificationCenter({
     </Dialog>
   );
 }
-
 function NotificationList({
   notifications,
   emptyIcon: EmptyIcon,
@@ -319,7 +309,6 @@ function NotificationList({
       </div>
     );
   }
-
   if (error) {
     return (
       <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-6 text-center">
@@ -339,7 +328,6 @@ function NotificationList({
       </div>
     );
   }
-
   if (notifications.length === 0) {
     return (
       <div className="flex min-h-64 flex-col items-center justify-center gap-3 px-6 text-center">
@@ -350,7 +338,6 @@ function NotificationList({
       </div>
     );
   }
-
   return (
     <ScrollArea className="max-h-[min(24rem,calc(100vh-14rem))]">
       <div className="divide-y [&>div:first-child]:border-b-0">
@@ -359,7 +346,6 @@ function NotificationList({
           const ToneIcon = tone.icon;
           const isPending = pendingNotifications.has(notification.id);
           const hasReadAction = showReadAction && !!onMarkAsRead;
-
           return (
             <div
               className="group relative mx-2 my-1 rounded-xl transition-colors focus-within:bg-muted/70 hover:bg-muted/70"
@@ -425,16 +411,13 @@ function NotificationList({
     </ScrollArea>
   );
 }
-
 function formatNotificationTimestamp(
   createdAt: NotificationCenterItem["createdAt"],
   locale = "pt-BR",
 ) {
   const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
   const differenceInSeconds = Math.round((date.getTime() - Date.now()) / 1000);
-
   if (Number.isNaN(differenceInSeconds)) return "Data desconhecida";
-
   const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const divisions = [
     { amount: 60, unit: "second" },
@@ -445,7 +428,6 @@ function formatNotificationTimestamp(
     { amount: 12, unit: "month" },
     { amount: Number.POSITIVE_INFINITY, unit: "year" },
   ] as const;
-
   let duration = differenceInSeconds;
   for (const division of divisions) {
     if (Math.abs(duration) < division.amount) {
@@ -453,10 +435,8 @@ function formatNotificationTimestamp(
     }
     duration /= division.amount;
   }
-
   return formatter.format(Math.round(duration), "year");
 }
-
 export {
   NotificationCenter,
   formatNotificationTimestamp,

@@ -1,5 +1,4 @@
 "use client";
-
 import {
   ChevronDown,
   ChevronRight,
@@ -30,16 +29,13 @@ import {
 import { cn } from "@/lib/utils";
 
 import { UserAvatar } from "../user-avatar/user-avatar";
-
 type UserMenuTheme = "light" | "dark" | "system";
 type UserMenuVariant = "compact" | "default" | "sidebar";
-
 type UserMenuUser = {
   name?: string;
   email?: string;
   avatar?: string | null;
 };
-
 type UserMenuProps = {
   user?: UserMenuUser;
   variant?: UserMenuVariant;
@@ -53,13 +49,11 @@ type UserMenuProps = {
   adminUsersHref?: string;
   canAdminister?: boolean;
 };
-
 const themes = [
   { value: "light", label: "Tema claro", icon: Sun },
   { value: "dark", label: "Tema escuro", icon: Moon },
   { value: "system", label: "Tema do sistema", icon: Monitor },
 ] as const;
-
 function UserMenu({
   user,
   variant = "default",
@@ -80,65 +74,60 @@ function UserMenu({
   const isCompact = variant === "compact";
   const isSidebar = variant === "sidebar";
   const TriggerChevron = isSidebar ? ChevronRight : ChevronDown;
-
   function handleThemeChange(value: unknown) {
     if (value !== "light" && value !== "dark" && value !== "system") {
       return;
     }
-
     if (themeProp === undefined) {
       setUncontrolledTheme(value);
     }
-
     onThemeChange?.(value);
   }
-
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            aria-label="Abrir menu da conta"
-            className={cn(
-              "group shrink-0 data-popup-open:bg-accent",
-              isCompact && "size-11 rounded-full border border-border/80 bg-muted/40 p-1",
-              variant === "default" &&
-                "h-11 gap-2 rounded-full border border-border/80 bg-muted/40 p-1 sm:pr-3",
-              isSidebar && "h-auto w-full justify-start gap-3 rounded-xl p-2 text-left",
-            )}
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          aria-label="Abrir menu da conta"
+          className={cn(
+            "group shrink-0 data-[state=open]:bg-accent",
+            isCompact && "size-11 rounded-full border border-border/80 bg-muted/40 p-1",
+            variant === "default" &&
+              "h-11 gap-2 rounded-full border border-border/80 bg-muted/40 p-1 sm:pr-3",
+            isSidebar && "h-auto w-full justify-start gap-3 rounded-xl p-2 text-left",
+          )}
+        >
+          <UserAvatar
+            userimage={user?.avatar}
+            username={user?.name}
+            className="size-9 shrink-0 select-none"
           />
-        }
-      >
-        <UserAvatar
-          userimage={user?.avatar}
-          username={user?.name}
-          className="size-9 shrink-0 select-none"
-        />
-        {!isCompact && !isSidebar && (
-          <span className="hidden max-w-28 truncate text-sm font-medium sm:block">
-            {firstName || "Minha conta"}
-          </span>
-        )}
-        {isSidebar && (
-          <span className="flex min-w-0 flex-1 flex-col items-start">
-            <span className="w-full truncate text-sm font-medium">
-              {user?.name || "Minha conta"}
+          {!isCompact && !isSidebar && (
+            <span className="hidden max-w-28 truncate text-sm font-medium sm:block">
+              {firstName || "Minha conta"}
             </span>
-            {user?.email && (
-              <span className="w-full truncate text-xs text-muted-foreground">{user.email}</span>
-            )}
-          </span>
-        )}
-        {!isCompact && (
-          <TriggerChevron
-            className={cn(
-              "size-4 shrink-0 text-muted-foreground",
-              !isSidebar && "hidden transition-transform group-data-popup-open:rotate-180 sm:block",
-              isSidebar && "ml-auto",
-            )}
-          />
-        )}
+          )}
+          {isSidebar && (
+            <span className="flex min-w-0 flex-1 flex-col items-start">
+              <span className="w-full truncate text-sm font-medium">
+                {user?.name || "Minha conta"}
+              </span>
+              {user?.email && (
+                <span className="w-full truncate text-xs text-muted-foreground">{user.email}</span>
+              )}
+            </span>
+          )}
+          {!isCompact && (
+            <TriggerChevron
+              className={cn(
+                "size-4 shrink-0 text-muted-foreground",
+                !isSidebar &&
+                  "hidden transition-transform group-data-[state=open]:rotate-180 sm:block",
+                isSidebar && "ml-auto",
+              )}
+            />
+          )}
+        </Button>
       </DropdownMenuTrigger>
 
       <DropdownMenuContent
@@ -162,7 +151,7 @@ function UserMenu({
             />
             <span
               aria-hidden="true"
-              className="absolute inset-0 flex items-center justify-center rounded-full bg-black/50 text-white opacity-0 transition-opacity group-hover/avatar:opacity-100 group-focus-visible/avatar:opacity-100"
+              className="absolute inset-0 flex items-center justify-center rounded-full bg-background/70 text-foreground opacity-0 transition-opacity group-hover/avatar:opacity-100 group-focus-visible/avatar:opacity-100"
             >
               <Pencil className="size-5" />
             </span>
@@ -173,39 +162,35 @@ function UserMenu({
           </p>
         </div>
 
-        <DropdownMenuItem
-          render={<a href={profileHref} />}
-          className="min-h-11 gap-3 rounded-full border border-border/60 bg-background px-4 shadow-xs"
-        >
-          <UserRound className="size-4" />
-          Minha conta
+        <DropdownMenuItem className="min-h-11 gap-3 rounded-full border px-4" asChild>
+          <a href={profileHref}>
+            <UserRound className="size-4" />
+            Minha conta
+          </a>
         </DropdownMenuItem>
 
         <DropdownMenuGroup
-          className="my-3 rounded-2xl bg-muted/60 p-1.5"
+          className="my-3 rounded-3xl bg-muted/20 p-1.5 dark:bg-muted/60"
           aria-label="Atalhos da conta"
         >
-          <DropdownMenuItem
-            render={<a href={securityHref} />}
-            className="min-h-11 gap-3 rounded-xl px-3"
-          >
-            <ShieldCheck className="size-4" />
-            Segurança
+          <DropdownMenuItem className="min-h-11 gap-3 rounded-3xl px-3" asChild>
+            <a href={securityHref}>
+              <ShieldCheck className="size-4" />
+              Segurança
+            </a>
           </DropdownMenuItem>
-          <DropdownMenuItem
-            render={<a href={applicationsHref} />}
-            className="min-h-11 gap-3 rounded-xl px-3"
-          >
-            <LayoutGrid className="size-4" />
-            Minhas aplicações
+          <DropdownMenuItem className="min-h-11 gap-3 rounded-3xl px-3" asChild>
+            <a href={applicationsHref}>
+              <LayoutGrid className="size-4" />
+              Minhas aplicações
+            </a>
           </DropdownMenuItem>
           {canAdminister && (
-            <DropdownMenuItem
-              render={<a href={adminUsersHref} />}
-              className="min-h-11 gap-3 rounded-xl px-3"
-            >
-              <UsersRound className="size-4" />
-              Gerenciar usuários
+            <DropdownMenuItem className="min-h-11 gap-3 rounded-3xl px-3" asChild>
+              <a href={adminUsersHref}>
+                <UsersRound className="size-4" />
+                Gerenciar usuários
+              </a>
             </DropdownMenuItem>
           )}
         </DropdownMenuGroup>
@@ -226,10 +211,9 @@ function UserMenu({
               <DropdownMenuRadioItem
                 key={value}
                 value={value}
-                label={label}
                 aria-label={label}
                 title={label}
-                className="size-9 cursor-pointer justify-center rounded-full p-0 text-muted-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring data-checked:bg-background data-checked:text-foreground data-checked:shadow-sm [&>[data-slot=dropdown-menu-radio-item-indicator]]:hidden"
+                className="size-9 cursor-pointer justify-center rounded-full p-0 text-muted-foreground transition-colors focus-visible:ring-2 focus-visible:ring-ring *:data-[slot=dropdown-menu-radio-item-indicator]:hidden data-checked:bg-background data-checked:text-foreground data-checked:shadow-sm"
               >
                 <Icon className="size-4" />
               </DropdownMenuRadioItem>
@@ -241,7 +225,7 @@ function UserMenu({
         <DropdownMenuItem
           variant="destructive"
           onClick={() => void onLogout?.()}
-          className="min-h-11 justify-center gap-2 rounded-full border border-border bg-background shadow-xs"
+          className="min-h-11 justify-center gap-2 rounded-full border border-destructive/30 dark:border-destructive/50"
         >
           <LogOut className="size-4" />
           Sair da conta
@@ -250,7 +234,6 @@ function UserMenu({
     </DropdownMenu>
   );
 }
-
 export {
   UserMenu,
   type UserMenuProps,

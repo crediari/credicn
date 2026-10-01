@@ -1,6 +1,5 @@
-import { mergeProps } from "@base-ui/react/merge-props";
-import { useRender } from "@base-ui/react/use-render";
 import { cva, type VariantProps } from "class-variance-authority";
+import { Slot } from "radix-ui";
 import type * as React from "react";
 
 import { Button } from "@/components/ui/button";
@@ -95,7 +94,7 @@ function FileCardTitle({ className, ...props }: React.ComponentProps<"span">) {
     <span
       data-slot="file-card-title"
       className={cn(
-        "group-data-[state=processing]/file-card:shimmer group-data-[state=uploading]/file-card:shimmer block max-w-full min-w-0 truncate font-medium",
+        "block max-w-full min-w-0 truncate font-medium group-data-[state=processing]/file-card:animate-pulse group-data-[state=uploading]/file-card:animate-pulse",
         className,
       )}
       {...props}
@@ -148,24 +147,20 @@ function FileCardAction({
 
 function FileCardTrigger({
   className,
-  render,
+  asChild = false,
   type,
   ...props
-}: useRender.ComponentProps<"button">) {
-  return useRender({
-    defaultTagName: "button",
-    props: mergeProps<"button">(
-      {
-        type: render ? type : (type ?? "button"),
-        className: cn("absolute inset-0 z-10 outline-none", className),
-      },
-      props,
-    ),
-    render,
-    state: {
-      slot: "file-card-trigger",
-    },
-  });
+}: React.ComponentProps<"button"> & { asChild?: boolean }) {
+  const Comp = asChild ? Slot.Root : "button";
+
+  return (
+    <Comp
+      data-slot="file-card-trigger"
+      type={asChild ? type : (type ?? "button")}
+      className={cn("absolute inset-0 z-10 outline-none", className)}
+      {...props}
+    />
+  );
 }
 
 function FileCardGroup({ className, ...props }: React.ComponentProps<"div">) {
@@ -173,7 +168,7 @@ function FileCardGroup({ className, ...props }: React.ComponentProps<"div">) {
     <div
       data-slot="file-card-group"
       className={cn(
-        "scroll-fade-x scrollbar-none flex min-w-0 snap-x snap-mandatory scroll-px-1 gap-3 overflow-x-auto overscroll-x-contain py-1 *:data-[slot=file-card]:flex-none *:data-[slot=file-card]:snap-start",
+        "flex min-w-0 snap-x snap-mandatory scroll-px-1 gap-3 overflow-x-auto overscroll-x-contain py-1 [scrollbar-width:none] *:data-[slot=file-card]:flex-none *:data-[slot=file-card]:snap-start [&::-webkit-scrollbar]:hidden",
         className,
       )}
       {...props}

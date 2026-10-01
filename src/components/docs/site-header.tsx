@@ -11,21 +11,21 @@ import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/s
 import { getSiteNavigationSections, type SiteNavigationSection } from "../../lib/navigation";
 import { siteConfig } from "../../lib/site-config";
 import { cn } from "../../lib/utils";
-
 export function SiteHeader() {
   const pathname = useRouterState({
     select: (state) => state.location.pathname,
   });
   const [open, setOpen] = React.useState(false);
   const visibleSections = getSiteNavigationSections();
-
   return (
     <header className="sticky top-0 z-50 w-full bg-transparent">
       <div className="mx-auto flex h-14 max-w-screen-2xl items-center gap-4 px-4">
         <Sheet open={open} onOpenChange={setOpen}>
-          <SheetTrigger render={<Button variant="ghost" size="icon" className="lg:hidden" />}>
-            <IconMenu2 data-icon />
-            <span className="sr-only">Toggle menu</span>
+          <SheetTrigger asChild>
+            <Button variant="ghost" size="icon" className="lg:hidden">
+              <IconMenu2 data-icon />
+              <span className="sr-only">Toggle menu</span>
+            </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-66! bg-background/96 p-0 backdrop-blur-lg">
             <SheetTitle className="sr-only">Navigation</SheetTitle>
@@ -52,14 +52,11 @@ export function SiteHeader() {
 
         <div className="ml-auto flex items-center gap-1">
           <SearchDialog />
-          <Button
-            variant="ghost"
-            size="icon"
-            nativeButton={false}
-            render={<a href={siteConfig.repositoryUrl} target="_blank" rel="noopener noreferrer" />}
-          >
-            <IconBrandGithub data-icon />
-            <span className="sr-only">GitHub</span>
+          <Button variant="ghost" size="icon" asChild>
+            <a href={siteConfig.repositoryUrl} target="_blank" rel="noopener noreferrer">
+              <IconBrandGithub data-icon />
+              <span className="sr-only">GitHub</span>
+            </a>
           </Button>
           <ThemeToggle />
         </div>
@@ -67,7 +64,6 @@ export function SiteHeader() {
     </header>
   );
 }
-
 function HeaderSectionLink({
   section,
   pathname,
@@ -79,7 +75,6 @@ function HeaderSectionLink({
     "rounded-md px-3 py-1.5 text-sm transition-colors hover:text-foreground",
     isSectionActive(section, pathname) ? "text-foreground" : "text-muted-foreground",
   );
-
   switch (section.id) {
     case "docs":
       return (
@@ -102,10 +97,8 @@ function HeaderSectionLink({
         </Link>
       );
   }
-
   return null;
 }
-
 function isSectionActive(section: SiteNavigationSection, pathname: string) {
   return pathname === section.basePath || pathname.startsWith(`${section.basePath}/`);
 }

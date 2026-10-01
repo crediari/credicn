@@ -1,5 +1,4 @@
 "use client";
-
 import { Grip, Image, Search, SearchX, ToolCase, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -14,19 +13,16 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { UserAvatar } from "../user-avatar/user-avatar";
-
 type ApplicationItem = {
   id: string;
   name: string;
   url: string;
   logoUrl?: string | null;
 };
-
 type ApplicationsDropdownUser = {
   name?: string;
   avatar?: string | null;
 };
-
 type ApplicationsDropdownProps = {
   systems?: ApplicationItem[];
   tools?: ApplicationItem[];
@@ -34,7 +30,6 @@ type ApplicationsDropdownProps = {
   accountUrl?: string;
   user?: ApplicationsDropdownUser;
 };
-
 function ApplicationsDropdown({
   systems = [],
   tools = [],
@@ -53,43 +48,35 @@ function ApplicationsDropdown({
   const showAccount =
     !normalizedSearch || normalizeSearch(`Conta ${user?.name ?? ""}`).includes(normalizedSearch);
   const hasSearchResults = showAccount || filteredSystems.length > 0 || filteredTools.length > 0;
-
   useEffect(() => {
     if (isSearchOpen) {
       searchInputRef.current?.focus();
     }
   }, [isSearchOpen]);
-
   function handleOpenChange(open: boolean) {
     setIsOpen(open);
-
     if (!open) {
       setIsSearchOpen(false);
       setSearch("");
     }
   }
-
   function toggleSearch() {
     if (isSearchOpen) {
       setSearch("");
     }
-
     setIsSearchOpen(!isSearchOpen);
   }
-
   return (
     <DropdownMenu open={isOpen} onOpenChange={handleOpenChange}>
-      <DropdownMenuTrigger
-        render={
-          <Button
-            variant="ghost"
-            size="sm"
-            className="size-10 rounded-full p-1"
-            aria-label="Apps da empresa"
-          />
-        }
-      >
-        <Grip className="size-5 text-muted-foreground" />
+      <DropdownMenuTrigger asChild>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="size-10 rounded-full p-1"
+          aria-label="Apps da empresa"
+        >
+          <Grip className="size-5 text-muted-foreground" />
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent
         side="bottom"
@@ -155,7 +142,7 @@ function ApplicationsDropdown({
             Nenhum app encontrado para “{search.trim()}”.
           </div>
         ) : (
-          <ScrollArea className="h-[min(22rem,calc(var(--available-height)-8rem))]">
+          <ScrollArea className="h-[min(22rem,calc(var(--radix-dropdown-menu-content-available-height)-8rem))]">
             <div className="space-y-4 pr-3">
               {(showAccount || filteredSystems.length > 0) && (
                 <div className="grid grid-cols-4 gap-2">
@@ -202,35 +189,33 @@ function ApplicationsDropdown({
     </DropdownMenu>
   );
 }
-
 function ApplicationCard({ app }: { app: ApplicationItem }) {
   return (
     <DropdownMenuItem
       className="flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-2xl p-3 transition-colors hover:bg-muted"
-      render={<a href={app.url} target="_blank" rel="noreferrer" />}
+      asChild
     >
-      <div className="flex flex-col items-center gap-1">
-        {app.logoUrl ? (
-          <img src={app.logoUrl} alt="" className="w-6" />
-        ) : (
-          <Image className="size-5" />
-        )}
-        <span className="line-clamp-2 text-center text-xs leading-tight font-medium">
-          {app.name}
-        </span>
-      </div>
+      <a href={app.url} target="_blank" rel="noreferrer">
+        <div className="flex flex-col items-center gap-1">
+          {app.logoUrl ? (
+            <img src={app.logoUrl} alt="" className="w-6" />
+          ) : (
+            <Image className="size-5" />
+          )}
+          <span className="line-clamp-2 text-center text-xs leading-tight font-medium">
+            {app.name}
+          </span>
+        </div>
+      </a>
     </DropdownMenuItem>
   );
 }
-
 function filterApplications(applications: ApplicationItem[], search: string) {
   if (!search) {
     return applications;
   }
-
   return applications.filter((application) => normalizeSearch(application.name).includes(search));
 }
-
 function normalizeSearch(value: string) {
   return value
     .normalize("NFD")
@@ -238,7 +223,6 @@ function normalizeSearch(value: string) {
     .toLocaleLowerCase("pt-BR")
     .trim();
 }
-
 export {
   ApplicationsDropdown,
   type ApplicationItem,

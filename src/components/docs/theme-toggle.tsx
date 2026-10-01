@@ -10,7 +10,6 @@ import {
   DropdownMenuTrigger,
 } from "../ui/dropdown-menu";
 import { useTheme } from "./theme-provider";
-
 const themeOptions = [
   {
     value: "system",
@@ -28,30 +27,31 @@ const themeOptions = [
     icon: IconMoon,
   },
 ] as const;
-
 type ThemeToggleProps = {
   className?: string;
 };
-
 export function ThemeToggle({ className }: ThemeToggleProps) {
   const { theme, setTheme } = useTheme();
   const currentOption = themeOptions.find((option) => option.value === theme) ?? themeOptions[0];
   const CurrentIcon = currentOption.icon;
-
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger
-        render={<Button variant="ghost" size="icon" className={className} data-theme-toggle="" />}
-      >
-        <CurrentIcon />
-        <span className="sr-only">Toggle theme</span>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" size="icon" className={className} data-theme-toggle="">
+          <CurrentIcon />
+          <span className="sr-only">Toggle theme</span>
+        </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-44">
         <DropdownMenuGroup>
-          <DropdownMenuRadioGroup value={theme} onValueChange={setTheme}>
+          <DropdownMenuRadioGroup
+            value={theme}
+            onValueChange={(value) => {
+              if (value === "light" || value === "dark" || value === "system") setTheme(value);
+            }}
+          >
             {themeOptions.map((option) => {
               const Icon = option.icon;
-
               return (
                 <DropdownMenuRadioItem
                   key={option.value}
