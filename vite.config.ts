@@ -145,6 +145,8 @@ const config = defineConfig({
   },
   resolve: {
     tsconfigPaths: true,
+    // RSC adapters and SSR must share RawStream's constructor for serialization.
+    dedupe: ["@tanstack/router-core"],
     alias: [
       {
         find: "@/components/ui/avatar",
