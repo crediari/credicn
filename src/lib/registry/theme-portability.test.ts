@@ -18,7 +18,11 @@ describe("registry theme portability", () => {
       // Installing an item must not import preview-shell styles or inject a theme.
       expect(source).not.toMatch(/(?:src\/styles\.css|@fontsource|cssVars:|@base-ui\/react)/u);
       if (path.endsWith("_registry.mdx")) return;
-      expect(source).not.toMatch(
+      // The original avatar gradient is an intentional visual exception requested by the user.
+      const themeSource = path.endsWith("/user-avatar/user-avatar.tsx")
+        ? source.replace("from-emerald-300 via-emerald-800 to-emerald-900", "")
+        : source;
+      expect(themeSource).not.toMatch(
         /\b(?:bg|text|border|ring|fill|stroke|from|via|to)-(?:white|black|slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose)(?:-\d+|\/\d+|\b)/u,
       );
       expect(source).not.toMatch(/\b(?:shimmer|scroll-fade-x|scrollbar-none|cn-font-heading)\b/u);
