@@ -2,10 +2,11 @@
 name: file-viewer
 type: registry:component
 title: File Viewer
-description: Accessible file preview dialog for images, PDF, media, text, CSV, and Excel workbooks.
+description: Dark file previews with continuous PDF scrolling, floating controls, and Office-to-PDF conversion.
 dependencies:
   - exceljs
   - lucide-react
+  - pdfjs-dist
 files:
   - path: file-viewer.tsx
     type: registry:component
@@ -13,8 +14,14 @@ files:
 
 Visualize arquivos em um diálogo responsivo e acessível. O componente suporta imagens, PDF,
 vídeo, áudio, texto/código, CSV, TSV, XLSX e XLSM, além de navegação por teclado, download,
-zoom por scroll e rotação de imagens. O fundo usa um overlay semitransparente baseado no token `background`,
-acompanhando o tema claro ou escuro da aplicação. Textos e planilhas são processados localmente no navegador.
+zoom por scroll e rotação de imagens. O visualizador usa o tema escuro da aplicação mesmo quando a página
+está no tema claro, com overlay `background/80`. Clique no fundo fora do arquivo para fechar.
+A barra com `position: absolute` fica centralizada na parte inferior e sobrepõe o preview sem reservar espaço
+ou reduzir a área de visualização. PDFs têm rolagem vertical contínua, indicador de página atual, total,
+navegação direta pelo campo, zoom e ajuste à tela; imagens com zoom e rotação; outros formatos
+com identificação e download. Os controles de reprodução permanecem junto ao áudio e vídeo.
+PDFs são renderizados por PDF.js, sem depender do leitor nativo do Chrome ou de iframe. PDF, texto e
+planilhas são processados no navegador.
 Enquanto o diálogo está aberto, o scroll da página é bloqueado e restaurado na posição anterior
 ao fechar, inclusive em navegadores móveis.
 
@@ -51,31 +58,78 @@ export function Attachments() {
 
 Você também pode fornecer `source` em cada arquivo como URL, `Blob`, `ArrayBuffer` ou
 `Uint8Array`. Use `renderPreview` para adicionar formatos específicos do seu app e
-`onDownload` quando o download exigir uma API própria. Arquivos XLS legados devem ser
-convertidos para XLSX ou tratados por um renderizador customizado.
+`onDownload` quando o download exigir uma API própria. Arquivos XLS legados podem usar o preview Office opcional.
+As URLs usadas por PDF.js, textos e planilhas precisam permitir `fetch` (mesma origem ou CORS).
+Para arquivos autenticados, `resolveFile` pode fazer o fetch com as credenciais necessárias e retornar um `Blob`.
+Erros de leitura do PDF e de conversão Office também são enviados a `onError`.
 
+
+### Preview Office opcional
+
+O componente identifica DOC/DOCX/DOCM, PPT/PPTX/PPTM, XLS/XLSB, ODT/ODP/ODS e RTF.
+Documentos Office são visualizados exclusivamente por uma versão PDF fornecida pela aplicação.
+Sem `officePreview`, o documento fica disponível para download e uma mensagem indica que falta a conversão.
+
+**Conversão para PDF:** forneça uma função que retorna uma versão PDF do documento. A sua aplicação
+implementa a conversão (por exemplo, em um serviço no backend). Funciona com arquivos privados, URLs,
+`Blob` e buffers e reaproveita a rolagem contínua e os controles do PDF. O download continua usando o arquivo original.
+A função recebe o arquivo, a origem já resolvida e o `AbortSignal` para cancelar ao fechar ou trocar de arquivo.
+
+```tsx
+<FileViewer
+  files={files}
+  open={open}
+  onOpenChange={setOpen}
+  officePreview={async (file, source, signal) => {
+    // Este endpoint deve existir na sua aplicação e converter o documento para PDF.
+    const response = await fetch(`/api/files/${file.id}/preview.pdf`, { signal });
+    if (!response.ok) throw new Error("Falha ao converter documento");
+    return response.blob();
+  }}
+/>
+```
+
+`renderPreview` continua disponível para renderizadores próprios e substitui a visualização e sua barra.
+
+### Worker do PDF.js
+
+O worker é carregado como asset local via `pdfjs-dist/build/pdf.worker.min.mjs?url` (Vite).
+Em outro bundler, adapte esse import à sua estratégia de assets ou forneça `pdfWorkerSrc` com a URL de um
+worker hospedado pela aplicação, da **mesma versão** do pacote `pdfjs-dist`. Sua política CSP precisa permitir
+esse worker e o carregamento dos arquivos.
+O PDF é um preview de leitura: campos de formulário e links internos não são interativos.
 
 ### Atalhos de teclado
 
 | Tecla | Ação |
 | --- | --- |
-| `Esc` | Fechar o visualizador |
+| `Esc` ou clique no fundo | Fechar o visualizador |
 | `←` / `→` | Arquivo anterior / próximo (navegação circular) |
-| `+` ou `=` / `-` | Aumentar / diminuir zoom da imagem |
+| `+` ou `=` / `-` | Aumentar / diminuir zoom da imagem ou PDF |
+| `Ctrl/Cmd` + scroll | Zoom do PDF em passos de 25% |
+| `PageUp` / `PageDown` | Rolagem nativa ao focar a área do PDF |
 | `R` | Girar a imagem em 90° |
 | `0` | Redefinir zoom e rotação |
 
-Nas imagens, o scroll do mouse ou trackpad ajusta o zoom entre 25% e 400%.
+Nas imagens, o scroll do mouse ou trackpad ajusta o zoom entre 25% e 400% em passos de 25%,
+com acumulação de pequenos movimentos e intervalo mínimo de 120 ms entre passos. Imagens são exibidas
+sem sombra, preservando a transparência de PNGs. No PDF, o scroll comum navega pelas páginas;
+Ctrl/Cmd + scroll ajusta o zoom com os mesmos passos.
 Clique e arraste a imagem ampliada para explorar qualquer direção; o cursor de mão indica
 quando a imagem pode ser movida. As barras de rolagem também continuam disponíveis. Ao trocar de arquivo ou
 reabrir o visualizador, o zoom e a rotação são redefinidos. Os atalhos respeitam campos
-editáveis, controles de mídia e combinações com Ctrl, Alt ou Cmd. Quando o foco está no
-leitor nativo de PDF, os atalhos seguem o comportamento do próprio navegador.
+editáveis, controles de mídia e combinações com Ctrl, Alt ou Cmd. Digite a página desejada no campo
+e pressione Enter ou saia do campo. Valores acima do total vão para a última página; valores inválidos
+restauram a página atual. O indicador acompanha a rolagem, sem botões para passar páginas.
+Somente páginas próximas da área visível mantêm seu canvas renderizado, limitando o uso de memória.
 
 ### Cenários da demonstração
 
 O preview inclui imagens horizontais, verticais e transparentes; PDF de duas páginas;
 áudio WAV e vídeo MP4; CSV simples e com campos especiais; TSV; Excel com múltiplas abas,
 datas e fórmulas; Markdown, JSON e logs longos. Também permite testar arquivo vazio,
-formato sem pré-visualização, carregamento lento, falha de carregamento, imagem e planilha
-corrompidas e uma galeria sem arquivos. Os arquivos e dados são fictícios e locais.
+formato sem pré-visualização, carregamento lento, falha de carregamento, imagem, PDF e planilha
+corrompidos e uma galeria sem arquivos. Os arquivos e dados são fictícios e locais.
+
+A demonstração Office usa uma conversão simulada para PDF: o PDF local de exemplo mostra a rolagem
+e os controles, sem converter os documentos de fato. O download preserva o DOCX/PPTX original.

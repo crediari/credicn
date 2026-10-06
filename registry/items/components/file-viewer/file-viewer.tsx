@@ -22,12 +22,14 @@ import {
   ZoomIn,
   ZoomOut,
 } from "lucide-react";
+import type { PDFDocumentLoadingTask, PDFDocumentProxy, RenderTask } from "pdfjs-dist";
 import {
   type CSSProperties,
   type ReactNode,
   useCallback,
   useEffect,
   useMemo,
+  useLayoutEffect,
   useRef,
   useState,
 } from "react";
@@ -44,7 +46,22 @@ type FileViewerFile = {
   source?: FileSource;
 };
 
-type FilePreviewKind = "image" | "pdf" | "video" | "audio" | "text" | "spreadsheet" | "unsupported";
+type FilePreviewKind =
+  | "image"
+  | "pdf"
+  | "video"
+  | "audio"
+  | "text"
+  | "spreadsheet"
+  | "office"
+  | "unsupported";
+
+// Return a PDF rendition without replacing the original file used for downloads.
+type FileViewerOfficePreview = (
+  file: FileViewerFile,
+  source: FileSource,
+  signal: AbortSignal,
+) => FileSource | Promise<FileSource>;
 
 type FileViewerRenderContext = {
   file: FileViewerFile;
@@ -77,6 +94,8 @@ type FileViewerProps = {
   onError?: (error: unknown, file: FileViewerFile) => void;
   onOpenChange?: (open: boolean) => void;
   renderPreview?: (context: FileViewerRenderContext) => ReactNode;
+  officePreview?: FileViewerOfficePreview;
+  pdfWorkerSrc?: string;
 };
 
 type ScrollLockSnapshot = {
@@ -109,6 +128,7 @@ const defaultLabels: FileViewerLabels = {
 const extensionGroups = {
   image: ["avif", "bmp", "gif", "ico", "jpeg", "jpg", "png", "svg", "webp"],
   pdf: ["pdf"],
+  office: ["doc", "docx", "docm", "ppt", "pptx", "pptm", "xls", "xlsb", "odt", "odp", "ods", "rtf"],
   video: ["m4v", "mov", "mp4", "ogv", "webm"],
   audio: ["aac", "flac", "m4a", "mp3", "oga", "ogg", "wav"],
   text: [
@@ -143,6 +163,7 @@ const extensionKinds: [Exclude<FilePreviewKind, "unsupported">, readonly string[
   ["audio", extensionGroups.audio],
   ["text", extensionGroups.text],
   ["spreadsheet", extensionGroups.spreadsheet],
+  ["office", extensionGroups.office],
 ];
 
 const mimeGroups: [FilePreviewKind, string][] = [
@@ -150,6 +171,14 @@ const mimeGroups: [FilePreviewKind, string][] = [
   ["spreadsheet", "application/vnd.ms-excel.sheet.macroenabled.12"],
   ["spreadsheet", "text/csv"],
   ["spreadsheet", "text/tab-separated-values"],
+  ["office", "application/vnd.openxmlformats-officedocument.wordprocessingml"],
+  ["office", "application/vnd.openxmlformats-officedocument.presentationml"],
+  ["office", "application/vnd.ms-word"],
+  ["office", "application/msword"],
+  ["office", "application/vnd.ms-powerpoint"],
+  ["office", "application/vnd.ms-excel"],
+  ["office", "application/vnd.oasis.opendocument"],
+  ["office", "application/rtf"],
   ["image", "image/"],
   ["video", "video/"],
   ["audio", "audio/"],
@@ -292,6 +321,8 @@ function FileViewer({
   onError,
   onOpenChange,
   renderPreview,
+  officePreview,
+  pdfWorkerSrc,
 }: FileViewerProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const closeButtonRef = useRef<HTMLButtonElement>(null);
@@ -307,6 +338,11 @@ function FileViewer({
   });
   const [resolvedSource, setResolvedSource] = useState<FileSource | null>(null);
   const [sourceUrl, setSourceUrl] = useState("");
+  const [officePdfSource, setOfficePdfSource] = useState<FileSource | null>(null);
+  const [pdfPage, setPdfPage] = useState(1);
+  const [pdfPageCount, setPdfPageCount] = useState(0);
+  const [pageRequest, setPageRequest] = useState<{ page: number } | null>(null);
+  const overlayPointerRef = useRef(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
   const [loadError, setLoadError] = useState<unknown>(null);
@@ -317,6 +353,8 @@ function FileViewer({
   const currentFile = files[safeIndex];
   const previewKind = currentFile ? getFilePreviewKind(currentFile) : "unsupported";
   const canNavigate = files.length > 1;
+  const isPdf =
+    previewKind === "pdf" || (previewKind === "office" && typeof officePreview === "function");
 
   useEffect(() => {
     if (!open) return undefined;
@@ -341,7 +379,10 @@ function FileViewer({
   useEffect(() => {
     setImageZoom(1);
     setImageRotation(0);
-  }, [open, currentFile]);
+    setPdfPage(1);
+    setPdfPageCount(0);
+    setPageRequest(null);
+  }, [open, currentFile, officePreview]);
 
   useEffect(() => {
     if (!open || !currentFile) {
@@ -349,6 +390,7 @@ function FileViewer({
       setLoadError(null);
       setResolvedSource(null);
       setSourceUrl("");
+      setOfficePdfSource(null);
       return undefined;
     }
 
@@ -360,6 +402,7 @@ function FileViewer({
       setLoadError(null);
       setResolvedSource(null);
       setSourceUrl("");
+      setOfficePdfSource(null);
 
       try {
         const nextSource =
@@ -373,6 +416,11 @@ function FileViewer({
         } else {
           objectUrl = URL.createObjectURL(sourceToBlob(nextSource, currentFile.type));
           setSourceUrl(objectUrl);
+        }
+        if (previewKind === "office" && typeof officePreview === "function") {
+          const pdfSource = await officePreview(currentFile, nextSource, controller.signal);
+          if (controller.signal.aborted) return;
+          setOfficePdfSource(pdfSource);
         }
       } catch (error) {
         if (controller.signal.aborted) return;
@@ -388,7 +436,7 @@ function FileViewer({
       controller.abort();
       if (objectUrl) URL.revokeObjectURL(objectUrl);
     };
-  }, [currentFile, onError, open, resolveFile]);
+  }, [currentFile, officePreview, onError, open, previewKind, resolveFile]);
 
   const move = useCallback(
     (direction: -1 | 1) => {
@@ -422,14 +470,14 @@ function FileViewer({
       } else if (event.key === "ArrowRight" && canNavigate) {
         event.preventDefault();
         move(1);
-      } else if (previewKind === "image") {
+      } else if (previewKind === "image" || isPdf) {
         if (event.key === "+" || event.key === "=") {
           event.preventDefault();
           setImageZoom((value) => Math.min(value + 0.25, 4));
         } else if (event.key === "-") {
           event.preventDefault();
           setImageZoom((value) => Math.max(value - 0.25, 0.25));
-        } else if (event.key.toLowerCase() === "r") {
+        } else if (previewKind === "image" && event.key.toLowerCase() === "r") {
           event.preventDefault();
           setImageRotation((value) => (value + 90) % 360);
         } else if (event.key === "0") {
@@ -443,7 +491,7 @@ function FileViewer({
     const dialog = dialogRef.current;
     dialog?.addEventListener("keydown", handleKeyDown);
     return () => dialog?.removeEventListener("keydown", handleKeyDown);
-  }, [canNavigate, move, open, previewKind]);
+  }, [canNavigate, isPdf, move, open, previewKind]);
 
   async function handleDownload() {
     if (!currentFile || !resolvedSource) return;
@@ -478,9 +526,36 @@ function FileViewer({
     <dialog
       aria-label={currentFile ? `Visualização de ${currentFile.name}` : "Visualizador de arquivos"}
       className={cn(
-        "fixed inset-0 z-50 m-0 hidden h-dvh max-h-none w-screen max-w-none bg-transparent p-0 text-foreground backdrop:bg-background/95 open:flex",
+        "dark fixed inset-0 z-50 m-0 hidden h-dvh max-h-none w-screen max-w-none bg-transparent p-0 text-foreground backdrop:bg-background/80 open:flex",
         className,
       )}
+      style={{ colorScheme: "dark" }}
+      onPointerDownCapture={(event) => {
+        const target = event.target;
+        overlayPointerRef.current =
+          event.isPrimary &&
+          event.button === 0 &&
+          target instanceof Element &&
+          !!target.closest("[data-viewer-backdrop]") &&
+          !target.closest("[data-viewer-content]");
+      }}
+      onKeyDown={(event) => {
+        if (event.key === "Escape" && !event.defaultPrevented) {
+          event.preventDefault();
+          setOpen(false);
+        }
+      }}
+      onClick={(event) => {
+        const target = event.target;
+        if (
+          overlayPointerRef.current &&
+          target instanceof Element &&
+          target.closest("[data-viewer-backdrop]") &&
+          !target.closest("[data-viewer-content]")
+        )
+          setOpen(false);
+        overlayPointerRef.current = false;
+      }}
       onCancel={(event) => {
         event.preventDefault();
         setOpen(false);
@@ -508,49 +583,6 @@ function FileViewer({
           </div>
 
           <div className="flex shrink-0 items-center gap-0.5">
-            {previewKind === "image" && (
-              <>
-                <ViewerButton
-                  label="Diminuir zoom"
-                  shortcut="-"
-                  disabled={imageZoom <= 0.25}
-                  onClick={() => setImageZoom((value) => Math.max(value - 0.25, 0.25))}
-                >
-                  <ZoomOut />
-                </ViewerButton>
-                <span className="hidden min-w-11 text-center text-xs text-muted-foreground tabular-nums sm:block">
-                  {Math.round(imageZoom * 100)}%
-                </span>
-                <ViewerButton
-                  label="Aumentar zoom"
-                  shortcut="+"
-                  disabled={imageZoom >= 4}
-                  onClick={() => setImageZoom((value) => Math.min(value + 0.25, 4))}
-                >
-                  <ZoomIn />
-                </ViewerButton>
-                <ViewerButton
-                  label="Girar imagem"
-                  shortcut="R"
-                  onClick={() => setImageRotation((value) => (value + 90) % 360)}
-                >
-                  <RotateCw />
-                </ViewerButton>
-                <ViewerButton
-                  label="Redefinir visualização"
-                  shortcut="0"
-                  className="hidden sm:inline-flex"
-                  onClick={() => {
-                    setImageZoom(1);
-                    setImageRotation(0);
-                  }}
-                >
-                  <Maximize2 />
-                </ViewerButton>
-                <div className="mx-1 h-5 w-px bg-border" />
-              </>
-            )}
-
             <ViewerButton
               label={labels.download}
               disabled={!resolvedSource || isDownloading}
@@ -569,7 +601,10 @@ function FileViewer({
           </div>
         </header>
 
-        <main className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden">
+        <main
+          data-viewer-backdrop
+          className="relative flex min-h-0 flex-1 items-center justify-center overflow-hidden"
+        >
           {isLoading && (
             <ViewerMessage
               icon={<LoaderCircle className="animate-spin" />}
@@ -586,7 +621,10 @@ function FileViewer({
           )}
 
           {!isLoading && !loadError && currentFile && resolvedSource && sourceUrl && (
-            <div className="flex h-full w-full items-center justify-center">
+            <div
+              className="flex h-full w-full items-center justify-center"
+              data-viewer-content={customPreview ? "" : undefined}
+            >
               {customPreview ?? renderBuiltInPreview()}
             </div>
           )}
@@ -594,6 +632,87 @@ function FileViewer({
           {!isLoading && !loadError && !currentFile && (
             <ViewerMessage icon={<File />} title="Nenhum arquivo para visualizar" />
           )}
+
+          {!isLoading &&
+            !loadError &&
+            resolvedSource &&
+            !customPreview &&
+            previewKind !== "unsupported" && (
+              <ViewerToolbar>
+                {isPdf && (
+                  <PageControls
+                    page={pdfPage}
+                    count={pdfPageCount}
+                    onPageChange={(page) => setPageRequest({ page })}
+                  />
+                )}
+                {previewKind === "image" || isPdf ? (
+                  <>
+                    {isPdf && <div className="mx-0.5 h-5 w-px bg-border" />}
+                    <ViewerButton
+                      label="Diminuir zoom"
+                      shortcut="-"
+                      disabled={imageZoom <= 0.25 || (isPdf && !pdfPageCount)}
+                      onClick={() => setImageZoom((value) => Math.max(value - 0.25, 0.25))}
+                    >
+                      <ZoomOut />
+                    </ViewerButton>
+                    <span className="min-w-10 text-center text-xs tabular-nums">
+                      {Math.round(imageZoom * 100)}%
+                    </span>
+                    <ViewerButton
+                      label="Aumentar zoom"
+                      shortcut="+"
+                      disabled={imageZoom >= 4 || (isPdf && !pdfPageCount)}
+                      onClick={() => setImageZoom((value) => Math.min(value + 0.25, 4))}
+                    >
+                      <ZoomIn />
+                    </ViewerButton>
+                    {previewKind === "image" && (
+                      <ViewerButton
+                        label="Girar imagem"
+                        shortcut="R"
+                        onClick={() => setImageRotation((value) => (value + 90) % 360)}
+                      >
+                        <RotateCw />
+                      </ViewerButton>
+                    )}
+                    <ViewerButton
+                      label="Ajustar à tela"
+                      className="hidden sm:inline-flex"
+                      shortcut="0"
+                      disabled={isPdf && !pdfPageCount}
+                      onClick={() => {
+                        setImageZoom(1);
+                        setImageRotation(0);
+                      }}
+                    >
+                      <Maximize2 />
+                    </ViewerButton>
+                  </>
+                ) : (
+                  <span className="px-3 text-xs font-medium whitespace-nowrap">
+                    {
+                      {
+                        audio: "Áudio",
+                        video: "Vídeo",
+                        text: "Texto",
+                        spreadsheet: "Planilha",
+                        office: "Documento Office",
+                      }[previewKind]
+                    }
+                  </span>
+                )}
+                <div className="mx-0.5 h-5 w-px bg-border" />
+                <ViewerButton
+                  label={labels.download}
+                  disabled={isDownloading}
+                  onClick={() => void handleDownload()}
+                >
+                  {isDownloading ? <LoaderCircle className="animate-spin" /> : <Download />}
+                </ViewerButton>
+              </ViewerToolbar>
+            )}
 
           {canNavigate && (
             <>
@@ -636,16 +755,30 @@ function FileViewer({
       );
     }
 
-    if (previewKind === "pdf") {
+    if (isPdf) {
       return (
-        <div className="flex h-full w-full justify-center p-3 sm:p-6">
-          <iframe
-            className="h-full w-full max-w-6xl border-0 bg-background shadow-xl"
-            sandbox="allow-same-origin"
-            src={sourceUrl}
-            title={currentFile.name}
-          />
-        </div>
+        <PdfPreview
+          key={sourceUrl}
+          source={officePdfSource ?? resolvedSource}
+          name={currentFile.name}
+          pageRequest={pageRequest}
+          onPageChange={setPdfPage}
+          zoom={imageZoom}
+          workerSrc={pdfWorkerSrc}
+          onPageCount={setPdfPageCount}
+          onZoomChange={setImageZoom}
+          onError={(error) => onError?.(error, currentFile)}
+        />
+      );
+    }
+
+    if (previewKind === "office") {
+      return (
+        <ViewerMessage
+          icon={<FileText />}
+          title="Pré-visualização Office indisponível"
+          description="Configure a conversão para PDF em officePreview. O arquivo original continua disponível para download."
+        />
       );
     }
 
@@ -653,6 +786,7 @@ function FileViewer({
       return (
         <div className="flex h-full w-full items-center justify-center p-6 sm:p-12">
           <video
+            data-viewer-content
             className="max-h-full max-w-full rounded-xl bg-background shadow-2xl"
             controls
             src={sourceUrl}
@@ -667,10 +801,13 @@ function FileViewer({
     if (previewKind === "audio") {
       return (
         <div className="flex h-full w-full items-center justify-center p-6">
-          <div className="w-full max-w-xl rounded-3xl border bg-background p-8 text-center shadow-xl">
+          <div
+            data-viewer-content
+            className="w-full max-w-xl rounded-3xl border bg-background p-8 text-center shadow-xl"
+          >
             <FileAudio className="mx-auto mb-5 size-14 text-muted-foreground" />
             <p className="mb-6 truncate font-medium">{currentFile.name}</p>
-            <audio className="w-full" controls src={sourceUrl}>
+            <audio data-viewer-content className="w-full" controls src={sourceUrl}>
               <track kind="captions" src={emptyCaptionsUrl} srcLang="pt-BR" />
               Seu navegador não suporta a reprodução deste áudio.
             </audio>
@@ -720,6 +857,385 @@ function FileViewer({
   }
 }
 
+function ViewerToolbar({ children }: { children: ReactNode }) {
+  return (
+    <div
+      data-viewer-content
+      role="toolbar"
+      aria-label="Controles da visualização"
+      className="absolute bottom-5 left-1/2 z-20 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-popover/95 p-1.5 text-popover-foreground shadow-xl backdrop-blur-md"
+    >
+      {children}
+    </div>
+  );
+}
+
+function PageControls({
+  page,
+  count,
+  onPageChange,
+}: {
+  page: number;
+  count: number;
+  onPageChange: (page: number) => void;
+}) {
+  const [draft, setDraft] = useState(String(page));
+  useEffect(() => setDraft(String(page)), [page]);
+
+  function commit() {
+    const value = Number(draft);
+    const nextPage = Number.isInteger(value) && value > 0 ? Math.min(value, count) : page;
+    if (count > 0) onPageChange(nextPage);
+    setDraft(String(count > 0 ? nextPage : page));
+  }
+
+  return (
+    <div className="flex items-center gap-0.5">
+      <form
+        className="flex items-center gap-1 text-xs tabular-nums"
+        onSubmit={(event) => {
+          event.preventDefault();
+          commit();
+        }}
+      >
+        <input
+          aria-label="Página atual"
+          className="h-8 w-9 rounded-md border border-transparent bg-transparent text-center focus:border-input focus:bg-background focus:outline-ring"
+          inputMode="numeric"
+          type="text"
+          disabled={!count}
+          value={draft}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={commit}
+        />
+        <span className="whitespace-nowrap text-muted-foreground">/ {count || "—"}</span>
+        <button type="submit" className="sr-only" disabled={!count}>
+          Ir para página
+        </button>
+      </form>
+    </div>
+  );
+}
+
+function PdfPreview({
+  source,
+  name,
+  pageRequest,
+  zoom,
+  workerSrc,
+  onPageCount,
+  onPageChange,
+  onZoomChange,
+  onError,
+}: {
+  source: FileSource;
+  name: string;
+  pageRequest: { page: number } | null;
+  zoom: number;
+  workerSrc?: string;
+  onPageCount: (count: number) => void;
+  onPageChange: (page: number) => void;
+  onZoomChange: React.Dispatch<React.SetStateAction<number>>;
+  onError?: (error: unknown) => void;
+}) {
+  const viewportRef = useRef<HTMLDivElement>(null);
+  const pagesRef = useRef<HTMLDivElement>(null);
+  const errorCallbackRef = useRef(onError);
+  const frameRef = useRef(0);
+  const [pdf, setPdf] = useState<PDFDocumentProxy | null>(null);
+  const [width, setWidth] = useState(0);
+  const [pageSize, setPageSize] = useState({ width: 612, height: 792 });
+  const [error, setError] = useState<unknown>(null);
+
+  useEffect(() => {
+    errorCallbackRef.current = onError;
+  }, [onError]);
+  useWheelZoom(viewportRef, onZoomChange, true);
+
+  useEffect(() => {
+    const element = viewportRef.current;
+    if (!element) return undefined;
+    const observer = new ResizeObserver(() => setWidth(element.clientWidth));
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    const controller = new AbortController();
+    let task: PDFDocumentLoadingTask | undefined;
+    setPdf(null);
+    setError(null);
+    onPageCount(0);
+    onPageChange(1);
+    viewportRef.current?.scrollTo(0, 0);
+
+    async function load() {
+      try {
+        const pdfjs = await import("pdfjs-dist");
+        const bundledWorker =
+          workerSrc ?? (await import("pdfjs-dist/build/pdf.worker.min.mjs?url")).default;
+        const buffer = await sourceToArrayBuffer(source, controller.signal);
+        if (controller.signal.aborted) return;
+        // PDF.js transfers its input to a worker; preserve the original download buffer.
+        pdfjs.GlobalWorkerOptions.workerSrc = bundledWorker;
+        task = pdfjs.getDocument({ data: new Uint8Array(buffer.slice(0)), useSystemFonts: true });
+        const document = await task.promise;
+        const firstPage = await document.getPage(1);
+        if (controller.signal.aborted) return;
+        const initial = firstPage.getViewport({ scale: 1 });
+        setPageSize({ width: initial.width, height: initial.height });
+        setPdf(document);
+        onPageCount(document.numPages);
+      } catch (nextError) {
+        if (controller.signal.aborted) return;
+        setError(nextError);
+        errorCallbackRef.current?.(nextError);
+      }
+    }
+    void load();
+    return () => {
+      controller.abort();
+      if (task) void task.destroy().catch(() => {});
+    };
+  }, [onPageChange, onPageCount, source, workerSrc]);
+
+  const scale = Math.min(Math.max(1, width - 24) / pageSize.width, 1.5) * zoom;
+
+  const previousScaleRef = useRef(scale);
+  useLayoutEffect(() => {
+    const root = viewportRef.current;
+    const ratio = scale / previousScaleRef.current;
+    previousScaleRef.current = scale;
+    if (!root || !pdf || ratio === 1) return;
+    root.scrollTop = (root.scrollTop + root.clientHeight / 2) * ratio - root.clientHeight / 2;
+    root.scrollLeft = (root.scrollLeft + root.clientWidth / 2) * ratio - root.clientWidth / 2;
+  }, [pdf, scale]);
+
+  const updateCurrentPage = useCallback(() => {
+    const root = viewportRef.current;
+    const pages = pagesRef.current?.children;
+    if (!root || !pages?.length) return;
+    const readingLine = root.getBoundingClientRect().top + root.clientHeight * 0.35;
+    // Find the page crossing the reading line without scanning a long document.
+    let low = 0;
+    let high = pages.length - 1;
+    while (low < high) {
+      const middle = Math.floor((low + high) / 2);
+      if (pages[middle].getBoundingClientRect().bottom < readingLine) low = middle + 1;
+      else high = middle;
+    }
+    onPageChange(low + 1);
+  }, [onPageChange]);
+
+  useEffect(() => {
+    updateCurrentPage();
+    return () => cancelAnimationFrame(frameRef.current);
+  }, [pdf, scale, updateCurrentPage]);
+
+  useEffect(() => {
+    const root = viewportRef.current;
+    const target = pagesRef.current?.children[(pageRequest?.page ?? 1) - 1];
+    if (!root || !target || !pageRequest) return;
+    root.scrollTo({
+      top:
+        root.scrollTop + target.getBoundingClientRect().top - root.getBoundingClientRect().top - 12,
+    });
+    updateCurrentPage();
+  }, [pageRequest, updateCurrentPage]);
+
+  /* eslint-disable jsx-a11y/no-noninteractive-tabindex -- A scroll region needs keyboard focus for native PageUp/PageDown navigation. */
+  return (
+    <div
+      ref={viewportRef}
+      className="relative h-full w-full overflow-auto overscroll-contain focus-visible:outline-none"
+      aria-label={`Páginas de ${name}`}
+      role="region"
+      tabIndex={0}
+      aria-busy={!pdf && !error}
+      onScroll={() => {
+        cancelAnimationFrame(frameRef.current);
+        frameRef.current = requestAnimationFrame(updateCurrentPage);
+      }}
+    >
+      {pdf && width > 0 && (
+        <div ref={pagesRef} className="flex w-max min-w-full flex-col items-center gap-3 p-3">
+          {Array.from({ length: pdf.numPages }, (_, index) => (
+            <PdfPage
+              key={index + 1}
+              pdf={pdf}
+              page={index + 1}
+              name={name}
+              scale={scale}
+              initialSize={pageSize}
+              viewportRef={viewportRef}
+              onError={(nextError) => errorCallbackRef.current?.(nextError)}
+            />
+          ))}
+        </div>
+      )}
+      {(!pdf || !!error) && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          <ViewerMessage
+            icon={error ? <AlertCircle /> : <LoaderCircle className="animate-spin" />}
+            title={error ? "Não foi possível ler o PDF" : "Carregando PDF..."}
+            description={error instanceof Error ? error.message : undefined}
+          />
+        </div>
+      )}
+    </div>
+  );
+  /* eslint-enable jsx-a11y/no-noninteractive-tabindex */
+}
+
+function PdfPage({
+  pdf,
+  page,
+  name,
+  scale,
+  initialSize,
+  viewportRef,
+  onError,
+}: {
+  pdf: PDFDocumentProxy;
+  page: number;
+  name: string;
+  scale: number;
+  initialSize: { width: number; height: number };
+  viewportRef: React.RefObject<HTMLDivElement | null>;
+  onError?: (error: unknown) => void;
+}) {
+  const pageRef = useRef<HTMLDivElement>(null);
+  const canvasHostRef = useRef<HTMLDivElement>(null);
+  const errorCallbackRef = useRef(onError);
+  const [size, setSize] = useState(initialSize);
+  const [nearViewport, setNearViewport] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<unknown>(null);
+  const [text, setText] = useState("");
+  useEffect(() => {
+    errorCallbackRef.current = onError;
+  }, [onError]);
+
+  useEffect(() => {
+    const element = pageRef.current;
+    if (!element) return undefined;
+    const observer = new IntersectionObserver(([entry]) => setNearViewport(entry.isIntersecting), {
+      root: viewportRef.current,
+      rootMargin: "100% 0px",
+    });
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, [viewportRef]);
+
+  useEffect(() => {
+    // Keep layout placeholders but release offscreen canvases to bound raster memory.
+    canvasHostRef.current?.replaceChildren();
+    if (!nearViewport) return undefined;
+    let cancelled = false;
+    let task: RenderTask | undefined;
+    setLoading(true);
+    setError(null);
+
+    async function render() {
+      try {
+        const pdfPage = await pdf.getPage(page);
+        if (cancelled) return;
+        const original = pdfPage.getViewport({ scale: 1 });
+        setSize({ width: original.width, height: original.height });
+        const scaled = pdfPage.getViewport({ scale });
+        const ratio = Math.min(
+          window.devicePixelRatio || 1,
+          2,
+          Math.sqrt(16_000_000 / (scaled.width * scaled.height)),
+        );
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.ceil(scaled.width * ratio);
+        canvas.height = Math.ceil(scaled.height * ratio);
+        canvas.style.width = `${scaled.width}px`;
+        canvas.style.height = `${scaled.height}px`;
+        canvas.setAttribute("aria-hidden", "true");
+        task = pdfPage.render({ canvas, viewport: scaled, transform: [ratio, 0, 0, ratio, 0, 0] });
+        await task.promise;
+        if (cancelled) return;
+        canvasHostRef.current?.replaceChildren(canvas);
+        setLoading(false);
+        const content = await pdfPage.getTextContent();
+        if (!cancelled)
+          setText(content.items.map((item) => ("str" in item ? item.str : "")).join(" "));
+      } catch (nextError) {
+        if (cancelled) return;
+        setLoading(false);
+        setError(nextError);
+        errorCallbackRef.current?.(nextError);
+      }
+    }
+    void render();
+    return () => {
+      cancelled = true;
+      task?.cancel();
+    };
+  }, [nearViewport, page, pdf, scale]);
+
+  return (
+    <div
+      data-pdf-page={page}
+      data-viewer-content
+      ref={pageRef}
+      className="relative shrink-0 bg-muted/40"
+      style={{ width: size.width * scale, height: size.height * scale }}
+      aria-busy={nearViewport && loading}
+    >
+      <div ref={canvasHostRef} />
+      <div className="sr-only" role="document" aria-label={`${name}, página ${page}`}>
+        {text}
+      </div>
+      {nearViewport && (loading || !!error) && (
+        <div className="absolute inset-0 flex items-center justify-center">
+          {error ? (
+            <ViewerMessage icon={<AlertCircle />} title={`Não foi possível ler a página ${page}`} />
+          ) : (
+            <LoaderCircle className="size-6 animate-spin text-muted-foreground" />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// One 25% step per wheel threshold, with a short throttle for trackpad inertia.
+function useWheelZoom(
+  viewportRef: React.RefObject<HTMLDivElement | null>,
+  onZoomChange: React.Dispatch<React.SetStateAction<number>>,
+  modifierOnly = false,
+) {
+  useEffect(() => {
+    const element = viewportRef.current;
+    if (!element) return undefined;
+    let accumulated = 0;
+    let lastEvent = 0;
+    let lastStep = -Infinity;
+
+    function handleWheel(event: WheelEvent) {
+      if (!event.deltaY || (modifierOnly && !event.ctrlKey && !event.metaKey)) return;
+      event.preventDefault();
+      const now = performance.now();
+      const delta =
+        event.deltaY *
+        (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? element!.clientHeight : 1);
+      if (now - lastEvent > 180 || Math.sign(delta) !== Math.sign(accumulated)) accumulated = 0;
+      lastEvent = now;
+      accumulated += Math.max(-100, Math.min(100, delta));
+      if (Math.abs(accumulated) < 60 || now - lastStep < 120) return;
+      const direction = Math.sign(accumulated);
+      accumulated = 0;
+      lastStep = now;
+      onZoomChange((value) => Math.max(0.25, Math.min(4, Math.round(value * 4 - direction) / 4)));
+    }
+    element.addEventListener("wheel", handleWheel, { passive: false });
+    return () => element.removeEventListener("wheel", handleWheel);
+  }, [modifierOnly, onZoomChange, viewportRef]);
+}
+
 function ImagePreview({
   name,
   sourceUrl,
@@ -754,29 +1270,16 @@ function ImagePreview({
     });
     observer.observe(viewportElement);
 
-    function handleWheel(event: WheelEvent) {
-      if (event.deltaY === 0) return;
-      event.preventDefault();
-      // Normalize mouse wheels and trackpads to a bounded, smooth zoom step.
-      const delta =
-        event.deltaY *
-        (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? viewportElement!.clientHeight : 1);
-      const factor = Math.exp(-Math.max(-100, Math.min(100, delta)) * 0.0025);
-      onZoomChange((value) => Math.max(0.25, Math.min(4, value * factor)));
-    }
+    return () => observer.disconnect();
+  }, []);
 
-    viewportElement.addEventListener("wheel", handleWheel, { passive: false });
-    return () => {
-      observer.disconnect();
-      viewportElement.removeEventListener("wheel", handleWheel);
-    };
-  }, [onZoomChange]);
+  useWheelZoom(viewportRef, onZoomChange);
 
   const fit =
     image.width && image.height
       ? Math.min(
-          Math.max(1, viewport.width - 48) / image.width,
-          Math.max(1, viewport.height - 48) / image.height,
+          Math.max(1, viewport.width) / image.width,
+          Math.max(1, viewport.height) / image.height,
           1,
         )
       : 1;
@@ -785,8 +1288,8 @@ function ImagePreview({
   const rotated = rotation % 180 !== 0;
   const canPan =
     !failed &&
-    ((rotated ? height : width) * zoom + 48 > viewport.width ||
-      (rotated ? width : height) * zoom + 48 > viewport.height);
+    ((rotated ? height : width) * zoom > viewport.width ||
+      (rotated ? width : height) * zoom > viewport.height);
 
   return (
     <div
@@ -797,7 +1300,14 @@ function ImagePreview({
         canPan && (isDragging ? "cursor-grabbing" : "cursor-grab"),
       )}
       onPointerDown={(event) => {
-        if (!canPan || !event.isPrimary || event.button !== 0) return;
+        if (
+          !canPan ||
+          !event.isPrimary ||
+          event.button !== 0 ||
+          !(event.target instanceof Element) ||
+          !event.target.closest("[data-viewer-content]")
+        )
+          return;
         event.preventDefault();
         const element = event.currentTarget;
         dragRef.current = {
@@ -836,8 +1346,9 @@ function ImagePreview({
           <ViewerMessage icon={<AlertCircle />} title="Não foi possível ler a imagem" />
         </div>
       ) : (
-        <div className="grid min-h-full w-max min-w-full place-items-center p-6">
+        <div className="grid min-h-full w-max min-w-full place-items-center">
           <div
+            data-viewer-content
             className="relative shrink-0"
             style={{
               width: (rotated ? height : width) * zoom,
@@ -846,7 +1357,7 @@ function ImagePreview({
           >
             <img
               alt={name}
-              className="absolute top-1/2 left-1/2 max-w-none object-contain shadow-2xl"
+              className="absolute top-1/2 left-1/2 max-w-none object-contain"
               draggable={false}
               src={sourceUrl}
               onLoad={(event) =>
@@ -878,6 +1389,7 @@ function ViewerButton({
 }: React.ComponentProps<"button"> & { label: string; shortcut?: string }) {
   return (
     <button
+      data-viewer-content
       aria-label={label}
       aria-keyshortcuts={shortcut}
       className={cn(
@@ -905,7 +1417,10 @@ function ViewerMessage({
   action?: ReactNode;
 }) {
   return (
-    <div className="mx-6 flex max-w-md flex-col items-center rounded-3xl border bg-background/95 p-8 text-center shadow-xl">
+    <div
+      data-viewer-content
+      className="mx-6 flex max-w-md flex-col items-center rounded-3xl border bg-background/95 p-8 text-center shadow-xl"
+    >
       <div className="mb-4 grid size-14 place-items-center rounded-3xl bg-muted text-muted-foreground [&_svg]:size-7">
         {icon}
       </div>
@@ -966,7 +1481,10 @@ function TextPreview({ source }: { source: FileSource }) {
 
   return (
     <div className="h-full w-full overflow-auto p-4 sm:p-8">
-      <pre className="mx-auto min-h-full max-w-6xl overflow-x-auto rounded-2xl border bg-background p-5 font-mono text-xs leading-relaxed shadow-sm sm:text-sm">
+      <pre
+        data-viewer-content
+        className="mx-auto min-h-full max-w-6xl overflow-x-auto rounded-2xl border bg-background p-5 font-mono text-xs leading-relaxed shadow-sm sm:text-sm"
+      >
         <code>{content}</code>
       </pre>
     </div>
@@ -1058,7 +1576,10 @@ function SpreadsheetPreview({ source, extension }: { source: FileSource; extensi
   }
 
   return (
-    <div className="mx-auto flex h-full min-h-0 max-w-6xl flex-col overflow-hidden rounded-xl border bg-background shadow-xl">
+    <div
+      data-viewer-content
+      className="mx-auto flex h-full min-h-0 max-w-6xl flex-col overflow-hidden rounded-xl border bg-background shadow-xl"
+    >
       <div className="min-h-0 flex-1 overflow-auto">
         <table className="w-max min-w-full border-separate border-spacing-0 text-xs">
           <thead className="sticky top-0 z-10 bg-muted">
@@ -1225,5 +1746,6 @@ export {
   type FileViewerFile,
   type FileViewerLabels,
   type FileViewerProps,
+  type FileViewerOfficePreview,
   type FileViewerRenderContext,
 };

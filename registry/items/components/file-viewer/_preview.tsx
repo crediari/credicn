@@ -8,6 +8,7 @@ import {
   formatFileSize,
   type FileSource,
   type FileViewerFile,
+  type FileViewerOfficePreview,
 } from "./file-viewer";
 
 type DemoFile = FileViewerFile & { scenario: string; group: string };
@@ -89,7 +90,38 @@ const examples: DemoFile[] = [
     type: "application/pdf",
     source: `${examplesPath}/relatorio.pdf`,
     group: "Documentos e mídia",
-    scenario: "PDF de duas páginas",
+    scenario: "PDF de duas páginas com scroll contínuo",
+  },
+  {
+    id: "pdf-buffer",
+    name: "relatorio-buffer.pdf",
+    type: "application/pdf",
+    group: "Documentos e mídia",
+    scenario: "PDF em Uint8Array: preview e download original",
+  },
+  {
+    id: "word",
+    name: "comunicado.docx",
+    type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    source: `${examplesPath}/comunicado.docx`,
+    group: "Documentos e mídia",
+    scenario: "Word: suporte Office opcional",
+  },
+  {
+    id: "presentation",
+    name: "apresentacao.pptx",
+    type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
+    source: `${examplesPath}/apresentacao.pptx`,
+    group: "Documentos e mídia",
+    scenario: "PowerPoint: suporte Office opcional",
+  },
+  {
+    id: "invalid-pdf",
+    name: "pdf-corrompido.pdf",
+    type: "application/pdf",
+    source: encodeDataUrl("Conteúdo inválido para PDF", "application/pdf"),
+    group: "Estados e limites",
+    scenario: "Erro de leitura do PDF",
   },
   {
     id: "audio",
@@ -221,6 +253,11 @@ function encodeDataUrl(content: string, mimeType: string) {
 }
 
 async function resolveDemoFile(file: FileViewerFile, signal: AbortSignal): Promise<FileSource> {
+  if (file.id === "pdf-buffer") {
+    const response = await fetch(`${examplesPath}/relatorio.pdf`, { signal });
+    if (!response.ok) throw new Error("Falha ao carregar PDF");
+    return new Uint8Array(await response.arrayBuffer());
+  }
   if (file.id === "error") throw new Error("Falha simulada: não foi possível obter o anexo.");
   if (file.id === "slow") {
     await new Promise<void>((resolve, reject) => {
@@ -275,6 +312,13 @@ async function resolveDemoFile(file: FileViewerFile, signal: AbortSignal): Promi
   return workbook.xlsx.writeBuffer();
 }
 
+// Simulates the response of a conversion endpoint; no Office conversion runs in this demo.
+const demoOfficePdf: FileViewerOfficePreview = async (_file, _source, signal) => {
+  const response = await fetch(`${examplesPath}/relatorio.pdf`, { signal });
+  if (!response.ok) throw new Error("Não foi possível carregar o PDF de demonstração");
+  return response.blob();
+};
+
 export function Preview() {
   const [open, setOpen] = useState(false);
   const [activeIndex, setActiveIndex] = useState(0);
@@ -294,10 +338,15 @@ export function Preview() {
           {files.length} exemplos para testar formatos, navegação e estados de erro.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
-          Esc fecha · ← → navegam · Scroll e +/− ampliam · Clique e arraste move a imagem · R gira ·
-          0 redefine
+          Esc ou clique no fundo fecha · ← → navegam · Scroll amplia imagens · Ctrl/Cmd + scroll
+          amplia PDF · R gira · 0 redefine
         </p>
       </div>
+
+      <p className="mb-4 px-2 text-xs text-muted-foreground">
+        Documentos Office usam uma conversão simulada: o PDF de exemplo é exibido e o download
+        mantém o documento original.
+      </p>
 
       <div className="max-h-136 space-y-4 overflow-auto overscroll-contain px-1 pb-2">
         {groups.map((group) => (
@@ -351,6 +400,7 @@ export function Preview() {
         onOpenChange={setOpen}
         open={open}
         resolveFile={resolveDemoFile}
+        officePreview={demoOfficePdf}
       />
     </div>
   );
