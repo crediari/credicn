@@ -1,0 +1,36 @@
+---
+name: debt-table
+type: registry:component
+title: Table
+description: Filterable debt spreadsheet with search, sorting, and pagination.
+dependencies:
+  - lucide-react
+registryDependencies:
+  - button
+  - input
+  - select
+  - table
+files:
+  - path: debt-table.tsx
+    type: registry:component
+---
+
+Pass mock rows. Search, column sorting, and pagination run in the component. Rows later than 50 days are highlighted.
+
+```tsx
+import { DebtTable } from "@/components/ui/debt-table";
+
+<DebtTable
+  rows={[
+    {
+      id: "1",
+      name: "Ana Souza",
+      account: "100240",
+      pa: "03",
+      invoiceBill: 1800,
+      delayedDays: 12,
+    },
+  ]}
+  onRowClick={(row) => console.log(row.id)}
+/>
+```
