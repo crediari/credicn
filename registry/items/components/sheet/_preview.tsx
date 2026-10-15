@@ -15,23 +15,23 @@ export function Preview() {
   return (
     <Sheet>
       <SheetTrigger asChild>
-        <Button variant="outline">Abrir painel</Button>
+        <Button variant="outline">Open panel</Button>
       </SheetTrigger>
       <SheetContent>
         <SheetHeader>
-          <SheetTitle>Configurações</SheetTitle>
-          <SheetDescription>Ajuste as preferências desta área.</SheetDescription>
+          <SheetTitle>Settings</SheetTitle>
+          <SheetDescription>Adjust the preferences for this area.</SheetDescription>
         </SheetHeader>
 
         <div className="px-6 text-sm text-muted-foreground">
-          O conteúdo principal do painel pode incluir formulários, filtros ou detalhes adicionais.
+          The panel’s main content can include forms, filters, or additional details.
         </div>
 
         <SheetFooter>
           <SheetClose asChild>
-            <Button variant="outline">Cancelar</Button>
+            <Button variant="outline">Cancel</Button>
           </SheetClose>
-          <Button>Salvar alterações</Button>
+          <Button>Save changes</Button>
         </SheetFooter>
       </SheetContent>
     </Sheet>

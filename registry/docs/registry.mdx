@@ -84,22 +84,20 @@ Use `localRegistryDependencies` for dependencies on other local registry items.
 
 After editing an item, run `vp check --fix` on touched files and `bun --bun ./scripts/doctor.ts`. Run `vp build` when registry docs, routes, JSON output, catalog loading, or source loading changed.
 
-## Temas e instalação
+## Themes and Installation
 
-Os componentes publicados herdam o tema da aplicação de destino. As superfícies, textos,
-bordas, estados de foco e cores de destaque usam os tokens semânticos do shadcn/ui, como
-`background`, `foreground`, `primary`, `muted`, `border` e `ring`. Nenhum item instala a paleta,
-a fonte ou o CSS global do Credicn.
+Published components inherit the target application’s theme. Surfaces, text, borders, focus states,
+and accent colors use shadcn/ui semantic tokens such as `background`, `foreground`, `primary`,
+`muted`, `border`, and `ring`. No item installs the Credicn palette, font, or global CSS.
 
-O Credicn usa `radix-luma`, a fonte Inter e os tokens claros e escuros do template do ecossistema
-para que as prévias correspondam aos apps. As dependências shadcn declaradas em cada item são
-resolvidas pelo CLI conforme o `components.json` da aplicação que recebe a instalação.
+Credicn uses `radix-luma`, Inter, and the ecosystem template’s light and dark tokens so previews
+match the apps. The CLI resolves each item’s declared shadcn dependencies using the receiving
+application’s `components.json`.
 
-Os componentes compostos usam a API Radix (`asChild` para compor triggers, botões e links).
-Instale-os em projetos shadcn com primitivas Radix; outros estilos visuais Radix podem usar os
-mesmos componentes e seus próprios tokens. Projetos com primitivas Base UI precisam adaptar
-a composição para a API correspondente.
+Composed components use the Radix API (`asChild` for triggers, buttons, and links). Install them
+in shadcn projects with Radix primitives; other Radix visual styles can use the same components
+with their own tokens. Projects using Base UI primitives need to adapt composition to that API.
 
-Ao criar ou alterar um item, use os componentes shadcn da aplicação para controles comuns e
-declare suas dependências no `_registry.mdx`. Use utilitários Tailwind padrão e tokens
-semânticos, sem depender de classes exclusivas de `src/styles.css` ou fixar cores do ecossistema.
+When creating or changing an item, use the application’s shadcn components for common controls
+and declare their dependencies in `_registry.mdx`. Use standard Tailwind utilities and semantic
+tokens without depending on classes exclusive to `src/styles.css` or hardcoding ecosystem colors.

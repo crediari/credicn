@@ -4,20 +4,20 @@ import { UserAvatar, UserAvatarGroup } from "./user-avatar";
 
 const team = [
   { id: 1, username: "Ana Costa", userimage: null },
-  { id: 2, username: "João", userimage: null },
+  { id: 2, username: "John", userimage: null },
   { id: 3, username: "Maria Silva", userimage: null },
   { id: 4, username: "Carlos Oliveira", userimage: null },
-  { id: 5, username: "Érica", userimage: null },
+  { id: 5, username: "Erica", userimage: null },
   { id: 6, username: "Pedro Lima", userimage: null },
 ];
 
 export function Preview() {
   return (
     <div className="grid gap-8">
-      <Example label="Fallbacks para nomes completos e simples">
+      <Example label="Fallbacks for full and single names">
         <div className="flex items-center gap-3">
           <UserAvatar username="Ana Costa" userimage={null} />
-          <UserAvatar username="João" userimage={null} size="lg" />
+          <UserAvatar username="John" userimage={null} size="lg" />
           <UserAvatar
             username="Maria Silva"
             userimage={null}
@@ -27,7 +27,7 @@ export function Preview() {
         </div>
       </Example>
 
-      <Example label="Grupo com limite e contador">
+      <Example label="Group with a limit and counter">
         <UserAvatarGroup users={team} max={4} />
       </Example>
 

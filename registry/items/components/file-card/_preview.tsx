@@ -22,23 +22,23 @@ const imagePreview =
   );
 
 const states = [
-  { state: "idle", name: "arquivo-selecionado.pdf", description: "Pronto para enviar" },
-  { state: "uploading", name: "design-system.zip", description: "Enviando · 64%" },
-  { state: "processing", name: "pesquisa-de-mercado.pdf", description: "Processando documento" },
+  { state: "idle", name: "selected-file.pdf", description: "Ready to upload" },
+  { state: "uploading", name: "design-system.zip", description: "Uploading · 64%" },
+  { state: "processing", name: "market-research.pdf", description: "Processing document" },
   {
     state: "error",
-    name: "modelo-financeiro.xlsx",
-    description: "Falha no envio. Tente novamente.",
+    name: "financial-model.xlsx",
+    description: "Upload failed. Try again.",
   },
-  { state: "done", name: "relatorio-enviado.pdf", description: "Enviado · 1,8 MB" },
+  { state: "done", name: "uploaded-report.pdf", description: "Uploaded · 1.8 MB" },
 ] as const;
 
 export function Preview() {
-  const [feedback, setFeedback] = useState("Selecione um anexo ou uma ação para testar o card.");
+  const [feedback, setFeedback] = useState("Select an attachment or an action to try the card.");
 
   return (
     <div className="grid w-full max-w-3xl gap-8">
-      <Example label="Estados">
+      <Example label="States">
         <div className="grid gap-2">
           {states.map(({ state, name, description }) => (
             <FileCard key={state} state={state}>
@@ -51,8 +51,8 @@ export function Preview() {
               </FileCardContent>
               <FileCardActions>
                 <FileCardAction
-                  aria-label={`Remover ${name}`}
-                  onClick={() => setFeedback(`Remover: ${name}`)}
+                  aria-label={`Remove ${name}`}
+                  onClick={() => setFeedback(`Remove: ${name}`)}
                 >
                   <XIcon />
                 </FileCardAction>
@@ -62,7 +62,7 @@ export function Preview() {
         </div>
       </Example>
 
-      <Example label="Tamanhos">
+      <Example label="Sizes">
         <div className="grid gap-2">
           {(["default", "sm", "xs"] as const).map((size) => (
             <FileCard key={size} size={size}>
@@ -70,7 +70,7 @@ export function Preview() {
                 <FileCodeIcon />
               </FileCardMedia>
               <FileCardContent>
-                <FileCardTitle>{size === "default" ? "Padrão" : size.toUpperCase()}</FileCardTitle>
+                <FileCardTitle>{size === "default" ? "Default" : size.toUpperCase()}</FileCardTitle>
                 {size !== "xs" && <FileCardDescription>TSX · 12 KB</FileCardDescription>}
               </FileCardContent>
             </FileCard>
@@ -78,30 +78,30 @@ export function Preview() {
         </div>
       </Example>
 
-      <Example label="Grupo e imagem vertical">
-        <FileCardGroup aria-label="Anexos do projeto" role="group" tabIndex={0}>
+      <Example label="Group and portrait image">
+        <FileCardGroup aria-label="Project attachments" role="group" tabIndex={0}>
           <FileCard>
             <FileCardMedia>
               <FileTextIcon />
             </FileCardMedia>
             <FileCardContent>
               <FileCardTitle>briefing.pdf</FileCardTitle>
-              <FileCardDescription>PDF · 1,4 MB</FileCardDescription>
+              <FileCardDescription>PDF · 1.4 MB</FileCardDescription>
             </FileCardContent>
           </FileCard>
 
           <FileCard orientation="vertical">
             <FileCardMedia variant="image">
-              <img alt="Paisagem ilustrada" src={imagePreview} />
+              <img alt="Illustrated landscape" src={imagePreview} />
             </FileCardMedia>
             <FileCardContent>
-              <FileCardTitle>paisagem.png</FileCardTitle>
+              <FileCardTitle>landscape.png</FileCardTitle>
               <FileCardDescription>PNG · 820 KB</FileCardDescription>
             </FileCardContent>
             <FileCardActions>
               <FileCardAction
-                aria-label="Remover paisagem.png"
-                onClick={() => setFeedback("Remover: paisagem.png")}
+                aria-label="Remove landscape.png"
+                onClick={() => setFeedback("Remove: landscape.png")}
               >
                 <XIcon />
               </FileCardAction>
@@ -120,26 +120,26 @@ export function Preview() {
         </FileCardGroup>
       </Example>
 
-      <Example label="Card interativo">
+      <Example label="Interactive card">
         <FileCard className="min-w-72">
           <FileCardMedia>
             <FileTextIcon />
           </FileCardMedia>
           <FileCardContent>
-            <FileCardTitle>resumo-da-pesquisa.pdf</FileCardTitle>
-            <FileCardDescription>Abrir pré-visualização</FileCardDescription>
+            <FileCardTitle>research-summary.pdf</FileCardTitle>
+            <FileCardDescription>Open preview</FileCardDescription>
           </FileCardContent>
           <FileCardActions>
             <FileCardAction
-              aria-label="Remover resumo-da-pesquisa.pdf"
-              onClick={() => setFeedback("Remover: resumo-da-pesquisa.pdf")}
+              aria-label="Remove research-summary.pdf"
+              onClick={() => setFeedback("Remove: research-summary.pdf")}
             >
               <XIcon />
             </FileCardAction>
           </FileCardActions>
           <FileCardTrigger
-            aria-label="Visualizar resumo-da-pesquisa.pdf"
-            onClick={() => setFeedback("Visualizar: resumo-da-pesquisa.pdf")}
+            aria-label="Preview research-summary.pdf"
+            onClick={() => setFeedback("Preview: research-summary.pdf")}
           />
         </FileCard>
       </Example>

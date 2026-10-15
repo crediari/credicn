@@ -15,10 +15,9 @@ localRegistryDependencies:
   - dialog
 ---
 
-Uma central de notificações pronta para uso, inspirada no fluxo do CrediDesk e desacoplada de
-roteador, contexto global e backend. O trigger com sino mostra a quantidade de itens não lidos;
-o dialog organiza notificações lidas e não lidas; e a área de preferências permite controlar o
-recebimento por categoria.
+A ready-to-use notification center inspired by CrediDesk, independent of routing, global context,
+and backend services. The bell trigger shows the unread count; the dialog organizes read and
+unread notifications; the preferences area controls delivery by category.
 
 ```tsx
 import { NotificationCenter } from "@/components/ui/notification-center";
@@ -37,59 +36,58 @@ import { NotificationCenter } from "@/components/ui/notification-center";
 />;
 ```
 
-## Formato das notificações
+## Notification Format
 
-O componente espera dados já normalizados. Mantenha navegação, consulta e persistência no app.
+The component expects normalized data. Keep navigation, queries, and persistence in the app.
 
 ```tsx
 const notifications = [
   {
     id: "notification-id",
-    title: "Novo chamado atribuído",
-    description: "O chamado #4821 precisa de uma primeira resposta.",
+    title: "New ticket assigned",
+    description: "Ticket #4821 needs an initial response.",
     createdAt: new Date(),
     read: false,
     tone: "info",
-    metadata: "Atendimento",
+    metadata: "Support",
     href: "/tickets/4821",
   },
 ];
 ```
 
-`tone` aceita `default`, `info`, `success`, `warning` e `error`. Use `icon` para substituir o
-ícone padrão da categoria. O texto de `description` é renderizado como texto, evitando que HTML
-recebido da API seja injetado diretamente na interface.
+`tone` accepts `default`, `info`, `success`, `warning`, and `error`. Use `icon` to override the
+category’s default icon. `description` is rendered as text, preventing API-supplied HTML from
+being injected directly into the interface.
 
-## Preferências de recebimento
+## Delivery Preferences
 
-A aba de preferências aparece quando o prop `preferences` contém itens. O estado permanece
-controlado pelo consumidor, o que permite persistir alterações na API e fazer rollback quando uma
-requisição falhar.
+The preferences tab appears when `preferences` contains items. The consumer controls the state,
+allowing changes to be persisted through an API and rolled back when a request fails.
 
 ```tsx
 const preferences = [
   {
     id: "mentions",
-    label: "Menções e respostas",
-    description: "Avise quando alguém mencionar você.",
+    label: "Mentions and replies",
+    description: "Notify me when someone mentions me.",
     enabled: true,
   },
 ];
 ```
 
-Use `pendingPreferenceIds` para desabilitar somente os switches que estiverem sendo persistidos.
+Use `pendingPreferenceIds` to disable only the switches currently being saved.
 
-## Operações assíncronas
+## Asynchronous Operations
 
-- `loading` exibe o estado de carregamento da lista.
-- `error` e `onRetry` exibem uma recuperação de falha.
-- `pendingNotificationIds` controla o progresso da leitura individual.
-- `markingAllAsRead` controla o progresso da leitura em lote.
-- `open`, `defaultOpen` e `onOpenChange` permitem uso controlado ou não controlado do dialog.
-- `closeOnNotificationOpen={false}` mantém o dialog aberto ao selecionar uma notificação.
-- `formatTimestamp` permite substituir a formatação relativa padrão.
+- `loading` shows the list’s loading state.
+- `error` and `onRetry` provide error recovery.
+- `pendingNotificationIds` tracks individual read operations.
+- `markingAllAsRead` tracks batch read progress.
+- `open`, `defaultOpen`, and `onOpenChange` support controlled and uncontrolled dialogs.
+- `closeOnNotificationOpen={false}` keeps the dialog open when selecting a notification.
+- `formatTimestamp` overrides the default relative timestamp formatting.
 
-## Integração recomendada
+## Recommended Integration
 
-Consulte o guia [Implementando notificações](/docs/notifications) para contratos HTTP, schema de
-banco de dados, preferências, atualização otimista, polling, tempo real e cuidados de segurança.
+See [Implementing Notifications](/docs/notifications) for HTTP contracts, database schemas,
+preferences, optimistic updates, polling, real-time delivery, and security considerations.

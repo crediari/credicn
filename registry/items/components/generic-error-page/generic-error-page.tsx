@@ -40,56 +40,54 @@ type VariantContent = {
 };
 const variantContent: Record<ErrorPageVariant, VariantContent> = {
   generic: {
-    code: "Ops",
-    eyebrow: "Algo deu errado",
-    title: "Não foi possível concluir esta ação",
-    description: "Tente novamente em alguns instantes ou volte para uma página conhecida.",
+    code: "Oops",
+    eyebrow: "Something went wrong",
+    title: "Could not complete this action",
+    description: "Try again in a moment or return to a familiar page.",
     icon: TriangleAlert,
   },
   "not-found": {
     code: "404",
-    eyebrow: "Página não encontrada",
-    title: "Parece que não há nada por aqui",
+    eyebrow: "Page not found",
+    title: "There seems to be nothing here",
     description:
-      "O endereço pode estar incorreto, ter mudado ou o conteúdo não está mais disponível.",
+      "The address may be incorrect, may have changed, or the content may no longer be available.",
     icon: SearchX,
   },
   "server-error": {
     code: "500",
-    eyebrow: "Erro interno",
-    title: "O servidor encontrou um problema",
-    description:
-      "Nossa aplicação não conseguiu responder agora. Tente novamente dentro de alguns instantes.",
+    eyebrow: "Internal error",
+    title: "The server encountered a problem",
+    description: "The application could not respond right now. Try again in a moment.",
     icon: ServerCrash,
   },
   forbidden: {
     code: "403",
-    eyebrow: "Acesso negado",
-    title: "Você não pode acessar esta página",
+    eyebrow: "Access denied",
+    title: "You cannot access this page",
     description:
-      "Sua conta não tem permissão para visualizar este conteúdo. Fale com um administrador se precisar de acesso.",
+      "Your account does not have permission to view this content. Contact an administrator if you need access.",
     icon: ShieldX,
   },
   unauthorized: {
     code: "401",
-    eyebrow: "Autenticação necessária",
-    title: "Entre para continuar",
-    description: "Sua sessão pode ter expirado. Faça login novamente para acessar este conteúdo.",
+    eyebrow: "Authentication required",
+    title: "Sign in to continue",
+    description: "Your session may have expired. Sign in again to access this content.",
     icon: LockKeyhole,
   },
   offline: {
     code: "Offline",
-    eyebrow: "Sem conexão",
-    title: "Não foi possível acessar a internet",
-    description: "Verifique sua conexão e tente novamente quando estiver online.",
+    eyebrow: "No connection",
+    title: "Could not connect to the internet",
+    description: "Check your connection and try again when you are online.",
     icon: WifiOff,
   },
   maintenance: {
     code: "503",
-    eyebrow: "Manutenção programada",
-    title: "Voltaremos em breve",
-    description:
-      "Estamos fazendo alguns ajustes para melhorar sua experiência. Tente novamente mais tarde.",
+    eyebrow: "Scheduled maintenance",
+    title: "We will be back soon",
+    description: "We are making improvements to your experience. Try again later.",
     icon: Wrench,
   },
 };

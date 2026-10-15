@@ -16,19 +16,19 @@ type DemoFile = FileViewerFile & { scenario: string; group: string };
 const examplesPath = "/examples/file-viewer";
 
 const groups = [
-  "Imagens",
-  "Documentos e mídia",
-  "Planilhas",
-  "Texto e código",
-  "Estados e limites",
+  "Images",
+  "Documents and media",
+  "Spreadsheets",
+  "Text and code",
+  "States and limits",
 ];
 
 const examples: DemoFile[] = [
   {
     id: "image",
-    group: "Imagens",
-    scenario: "Paisagem horizontal: zoom e rotação",
-    name: "paisagem.svg",
+    group: "Images",
+    scenario: "Landscape image: zoom and rotation",
+    name: "landscape.svg",
     size: 1_842,
     type: "image/svg+xml",
     source:
@@ -39,131 +39,131 @@ const examples: DemoFile[] = [
   },
   {
     id: "spreadsheet",
-    group: "Planilhas",
-    scenario: "CSV com números e cabeçalho",
-    name: "relatorio-mensal.csv",
+    group: "Spreadsheets",
+    scenario: "CSV with numbers and headers",
+    name: "monthly-report.csv",
     size: 156,
     type: "text/csv",
     source: encodeDataUrl(
-      "Mês,Receita,Despesas,Resultado\nJaneiro,128500,84200,44300\nFevereiro,136900,88750,48150\nMarço,149200,91600,57600",
+      "Month,Revenue,Expenses,Result\nJanuary,128500,84200,44300\nFebruary,136900,88750,48150\nMarch,149200,91600,57600",
       "text/csv",
     ),
   },
   {
     id: "text",
-    group: "Texto e código",
-    scenario: "Markdown exibido como texto",
-    name: "leia-me.md",
+    group: "Text and code",
+    scenario: "Markdown displayed as text",
+    name: "readme.md",
     size: 238,
     type: "text/markdown",
     source: encodeDataUrl(
-      "# Visualizador de arquivos\n\nUse as setas para navegar entre os anexos. Nas imagens, use scroll ou + e - para zoom, R para girar e 0 para redefinir; textos, CSV e planilhas Excel são processados localmente no navegador.",
+      "# File viewer\n\nUse the arrow keys to navigate attachments. For images, scroll or use + and - to zoom, R to rotate, and 0 to reset. Text, CSV, and Excel spreadsheets are processed locally in the browser.",
       "text/markdown",
     ),
   },
   {
     id: "excel",
-    group: "Planilhas",
-    scenario: "Três abas, datas, fórmulas e 150 linhas",
-    name: "planejamento.xlsx",
+    group: "Spreadsheets",
+    scenario: "Three sheets, dates, formulas, and 150 rows",
+    name: "planning.xlsx",
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   },
   {
     id: "portrait",
-    name: "retrato.svg",
+    name: "portrait.svg",
     type: "image/svg+xml",
     source: `${examplesPath}/retrato.svg`,
-    group: "Imagens",
-    scenario: "Imagem vertical para testar enquadramento",
+    group: "Images",
+    scenario: "Portrait image to test fit",
   },
   {
     id: "transparent",
-    name: "transparente.svg",
+    name: "transparent.svg",
     type: "image/svg+xml",
     source: `${examplesPath}/transparente.svg`,
-    group: "Imagens",
-    scenario: "Transparência sobre o overlay escuro",
+    group: "Images",
+    scenario: "Transparency over the dark overlay",
   },
   {
     id: "pdf",
-    name: "relatorio.pdf",
+    name: "report.pdf",
     type: "application/pdf",
     source: `${examplesPath}/relatorio.pdf`,
-    group: "Documentos e mídia",
-    scenario: "PDF de duas páginas com scroll contínuo",
+    group: "Documents and media",
+    scenario: "Two-page PDF with continuous scrolling",
   },
   {
     id: "pdf-buffer",
-    name: "relatorio-buffer.pdf",
+    name: "report-buffer.pdf",
     type: "application/pdf",
-    group: "Documentos e mídia",
-    scenario: "PDF em Uint8Array: preview e download original",
+    group: "Documents and media",
+    scenario: "Uint8Array PDF: preview and original download",
   },
   {
     id: "word",
-    name: "comunicado.docx",
+    name: "announcement.docx",
     type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     source: `${examplesPath}/comunicado.docx`,
-    group: "Documentos e mídia",
-    scenario: "Word: suporte Office opcional",
+    group: "Documents and media",
+    scenario: "Word: optional Office support",
   },
   {
     id: "presentation",
-    name: "apresentacao.pptx",
+    name: "presentation.pptx",
     type: "application/vnd.openxmlformats-officedocument.presentationml.presentation",
     source: `${examplesPath}/apresentacao.pptx`,
-    group: "Documentos e mídia",
-    scenario: "PowerPoint: suporte Office opcional",
+    group: "Documents and media",
+    scenario: "PowerPoint: optional Office support",
   },
   {
     id: "invalid-pdf",
-    name: "pdf-corrompido.pdf",
+    name: "corrupted-pdf.pdf",
     type: "application/pdf",
-    source: encodeDataUrl("Conteúdo inválido para PDF", "application/pdf"),
-    group: "Estados e limites",
-    scenario: "Erro de leitura do PDF",
+    source: encodeDataUrl("Invalid PDF content", "application/pdf"),
+    group: "States and limits",
+    scenario: "PDF read error",
   },
   {
     id: "audio",
-    name: "notificacao.wav",
+    name: "notification.wav",
     type: "audio/wav",
     source: `${examplesPath}/notificacao.wav`,
-    group: "Documentos e mídia",
-    scenario: "Áudio de dois segundos com controles nativos",
+    group: "Documents and media",
+    scenario: "Two-second audio with native controls",
   },
   {
     id: "video",
-    name: "demonstracao.mp4",
+    name: "demo.mp4",
     type: "video/mp4",
     source: `${examplesPath}/demonstracao.mp4`,
-    group: "Documentos e mídia",
-    scenario: "Vídeo de quatro segundos com controles nativos",
+    group: "Documents and media",
+    scenario: "Four-second video with native controls",
   },
   {
     id: "tsv",
-    name: "equipe.tsv",
+    name: "team.tsv",
     type: "text/tab-separated-values",
     source: encodeDataUrl(
-      "Nome\tÁrea\tStatus\nMarina\tTecnologia\tAtivo\nCarlos\tOperações\tAtivo\nLuiza\tDados\tFérias",
+      "Name\tDepartment\tStatus\nMarina\tTechnology\tActive\nCarlos\tOperations\tActive\nLuiza\tData\tOn leave",
       "text/tab-separated-values",
     ),
-    group: "Planilhas",
-    scenario: "Dados separados por tabulação e acentos",
+    group: "Spreadsheets",
+    scenario: "Tab-separated data",
   },
   {
     id: "quoted-csv",
-    name: "campos-especiais.csv",
+    name: "special-fields.csv",
     type: "text/csv",
     source: encodeDataUrl(
-      'Nome;Observação;Valor\n"Silva, Ana";"Linha 1\nLinha 2";1250\nCarlos;"Texto com ""aspas""";980',
+      'Name;Note;Value\n"Silva, Ana";"Line 1\nLine 2";1250\nCarlos;"Text with ""quotes""";980',
       "text/csv",
     ),
-    group: "Planilhas",
-    scenario: "CSV com ponto e vírgula, aspas e múltiplas linhas",
+    group: "Spreadsheets",
+    scenario: "CSV with semicolons, quotes, and multiline fields",
   },
   {
     id: "json",
-    name: "configuracao.json",
+    name: "configuration.json",
     type: "application/json",
     source: encodeDataUrl(
       JSON.stringify(
@@ -171,7 +171,7 @@ const examples: DemoFile[] = [
           app: "CrediAri",
           preview: {
             zoom: true,
-            atalhos: ["Escape", "ArrowLeft", "ArrowRight", "+", "-", "R", "0"],
+            shortcuts: ["Escape", "ArrowLeft", "ArrowRight", "+", "-", "R", "0"],
           },
         },
         null,
@@ -179,70 +179,70 @@ const examples: DemoFile[] = [
       ),
       "application/json",
     ),
-    group: "Texto e código",
-    scenario: "Código JSON com indentação",
+    group: "Text and code",
+    scenario: "Indented JSON code",
   },
   {
     id: "long-text",
-    name: "historico.log",
+    name: "history.log",
     type: "text/plain",
     source: encodeDataUrl(
       Array.from(
         { length: 180 },
         (_, i) =>
-          `[2026-10-01 09:${String(i % 60).padStart(2, "0")}:00] INFO Evento ${i + 1}: processamento de arquivo concluído com sucesso.`,
+          `[2026-10-01 09:${String(i % 60).padStart(2, "0")}:00] INFO Event ${i + 1}: file processing completed successfully.`,
       ).join("\n"),
       "text/plain",
     ),
-    group: "Texto e código",
-    scenario: "Texto longo com scroll",
+    group: "Text and code",
+    scenario: "Long text with scrolling",
   },
   {
     id: "empty-text",
-    name: "vazio.txt",
+    name: "empty.txt",
     size: 0,
     type: "text/plain",
     source: encodeDataUrl("", "text/plain"),
-    group: "Estados e limites",
-    scenario: "Arquivo de texto vazio",
+    group: "States and limits",
+    scenario: "Empty text file",
   },
   {
     id: "unsupported",
-    name: "dados.zip",
+    name: "data.zip",
     type: "application/zip",
     source: `${examplesPath}/dados.zip`,
-    group: "Estados e limites",
-    scenario: "Formato sem preview, disponível para download",
+    group: "States and limits",
+    scenario: "Unsupported preview format, available to download",
   },
   {
     id: "slow",
-    name: "carregamento-lento.txt",
+    name: "slow-loading.txt",
     type: "text/plain",
-    group: "Estados e limites",
-    scenario: "Carregamento simulado de dois segundos",
+    group: "States and limits",
+    scenario: "Simulated two-second load",
   },
   {
     id: "error",
-    name: "falha-ao-carregar.txt",
+    name: "load-failure.txt",
     type: "text/plain",
-    group: "Estados e limites",
-    scenario: "Falha simulada na resolução do arquivo",
+    group: "States and limits",
+    scenario: "Simulated file resolution failure",
   },
   {
     id: "invalid-excel",
-    name: "planilha-corrompida.xlsx",
+    name: "corrupted-spreadsheet.xlsx",
     type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
-    source: encodeDataUrl("Conteúdo inválido para uma planilha XLSX", "application/octet-stream"),
-    group: "Estados e limites",
-    scenario: "Erro de leitura da planilha",
+    source: encodeDataUrl("Invalid XLSX spreadsheet content", "application/octet-stream"),
+    group: "States and limits",
+    scenario: "Spreadsheet read error",
   },
   {
     id: "invalid-image",
-    name: "imagem-corrompida.png",
+    name: "corrupted-image.png",
     type: "image/png",
-    source: encodeDataUrl("Conteúdo inválido para uma imagem", "image/png"),
-    group: "Estados e limites",
-    scenario: "Erro de leitura da imagem",
+    source: encodeDataUrl("Invalid image content", "image/png"),
+    group: "States and limits",
+    scenario: "Image read error",
   },
 ];
 
@@ -255,10 +255,10 @@ function encodeDataUrl(content: string, mimeType: string) {
 async function resolveDemoFile(file: FileViewerFile, signal: AbortSignal): Promise<FileSource> {
   if (file.id === "pdf-buffer") {
     const response = await fetch(`${examplesPath}/relatorio.pdf`, { signal });
-    if (!response.ok) throw new Error("Falha ao carregar PDF");
+    if (!response.ok) throw new Error("Failed to load PDF");
     return new Uint8Array(await response.arrayBuffer());
   }
-  if (file.id === "error") throw new Error("Falha simulada: não foi possível obter o anexo.");
+  if (file.id === "error") throw new Error("Simulated failure: could not retrieve the attachment.");
   if (file.id === "slow") {
     await new Promise<void>((resolve, reject) => {
       if (signal.aborted) {
@@ -275,37 +275,36 @@ async function resolveDemoFile(file: FileViewerFile, signal: AbortSignal): Promi
       }
       signal.addEventListener("abort", abort, { once: true });
     });
-    return new Blob(
-      ["Arquivo carregado! Navegue durante o carregamento para testar o cancelamento."],
-      { type: "text/plain" },
-    );
+    return new Blob(["File loaded! Navigate during loading to test cancellation."], {
+      type: "text/plain",
+    });
   }
-  if (file.id !== "excel") throw new Error("Arquivo de demonstração não encontrado");
+  if (file.id !== "excel") throw new Error("Demo file not found");
 
   const { Workbook } = await import("exceljs");
   const workbook = new Workbook();
-  const sheet = workbook.addWorksheet("Planejamento");
+  const sheet = workbook.addWorksheet("Planning");
   sheet.addRows([
-    ["Projeto", "Responsável", "Status", "Orçamento"],
-    ["Portal interno", "Marina", "Em andamento", 85000],
-    ["Aplicativo", "Carlos", "Planejado", 120000],
-    ["Dados", "Luiza", "Concluído", 47500],
+    ["Project", "Assignee", "Status", "Budget"],
+    ["Internal portal", "Marina", "In progress", 85000],
+    ["Application", "Carlos", "Planned", 120000],
+    ["Data", "Luiza", "Completed", 47500],
   ]);
 
-  const summary = workbook.addWorksheet("Resumo");
+  const summary = workbook.addWorksheet("Summary");
   summary.addRows([
-    ["Indicador", "Valor"],
-    ["Orçamento total", { formula: "SUM(Planejamento!D2:D4)", result: 252500 }],
-    ["Atualizado em", new Date("2026-10-01T12:00:00Z")],
-    ["Documentação", { text: "CrediAri", hyperlink: "https://crediari.com.br" }],
+    ["Metric", "Value"],
+    ["Total budget", { formula: "SUM(Planning!D2:D4)", result: 252500 }],
+    ["Updated at", new Date("2026-10-01T12:00:00Z")],
+    ["Documentation", { text: "CrediAri", hyperlink: "https://crediari.com.br" }],
   ]);
-  const history = workbook.addWorksheet("Histórico");
-  history.addRow(["Registro", "Responsável", "Descrição", "Valor"]);
+  const history = workbook.addWorksheet("History");
+  history.addRow(["Record", "Assignee", "Description", "Value"]);
   for (let index = 0; index < 150; index += 1) {
     history.addRow([
       index + 1,
       ["Marina", "Carlos", "Luiza"][index % 3],
-      `Lançamento de demonstração ${index + 1}`,
+      `Demo entry ${index + 1}`,
       (index + 1) * 125,
     ]);
   }
@@ -315,7 +314,7 @@ async function resolveDemoFile(file: FileViewerFile, signal: AbortSignal): Promi
 // Simulates the response of a conversion endpoint; no Office conversion runs in this demo.
 const demoOfficePdf: FileViewerOfficePreview = async (_file, _source, signal) => {
   const response = await fetch(`${examplesPath}/relatorio.pdf`, { signal });
-  if (!response.ok) throw new Error("Não foi possível carregar o PDF de demonstração");
+  if (!response.ok) throw new Error("Could not load the demo PDF");
   return response.blob();
 };
 
@@ -333,19 +332,19 @@ export function Preview() {
   return (
     <div>
       <div className="px-2 pt-1 pb-3">
-        <p className="font-semibold">Explore o visualizador</p>
+        <p className="font-semibold">Explore the viewer</p>
         <p className="text-sm text-muted-foreground">
-          {files.length} exemplos para testar formatos, navegação e estados de erro.
+          {files.length} examples to test formats, navigation, and error states.
         </p>
         <p className="mt-2 text-xs text-muted-foreground">
-          Esc ou clique no fundo fecha · ← → navegam · Scroll amplia imagens · Ctrl/Cmd + scroll
-          amplia PDF · R gira · 0 redefine
+          Esc or backdrop click closes · ← → navigate · Scroll zooms images · Ctrl/Cmd + scroll
+          zooms PDFs · R rotates · 0 resets
         </p>
       </div>
 
       <p className="mb-4 px-2 text-xs text-muted-foreground">
-        Documentos Office usam uma conversão simulada: o PDF de exemplo é exibido e o download
-        mantém o documento original.
+        Office documents use simulated conversion: the sample PDF is displayed, and downloads
+        preserve the original document.
       </p>
 
       <div className="max-h-136 space-y-4 overflow-auto overscroll-contain px-1 pb-2">
@@ -389,7 +388,7 @@ export function Preview() {
             setOpen(true);
           }}
         >
-          Testar visualizador sem arquivos
+          Test the viewer without files
         </button>
       </div>
 

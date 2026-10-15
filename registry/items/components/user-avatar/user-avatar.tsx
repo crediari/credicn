@@ -44,7 +44,7 @@ function UserAvatar({
 }: UserAvatarProps) {
   return (
     <Avatar
-      aria-label={username ? `Avatar de ${username}` : "Avatar de usuário"}
+      aria-label={username ? `Avatar for ${username}` : "User avatar"}
       className={cn("rounded-full", className)}
       size={size}
       {...props}
@@ -77,8 +77,8 @@ function UserAvatarGroup({
   const visibleCount = Math.max(0, Math.floor(max));
   const visibleUsers = users.slice(0, visibleCount);
   const remaining = Math.max(0, users.length - visibleUsers.length);
-  const groupLabel = `Grupo com ${users.length} ${users.length === 1 ? "usuário" : "usuários"}`;
-  const overflowLabel = `${remaining} ${remaining === 1 ? "usuário adicional" : "usuários adicionais"}`;
+  const groupLabel = `Group of ${users.length} ${users.length === 1 ? "user" : "users"}`;
+  const overflowLabel = `${remaining} ${remaining === 1 ? "additional user" : "additional users"}`;
 
   return (
     <AvatarGroup aria-label={ariaLabel ?? groupLabel} className={className} role="group" {...props}>

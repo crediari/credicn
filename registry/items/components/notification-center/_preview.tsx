@@ -12,32 +12,32 @@ import {
 const initialNotifications: NotificationCenterItem[] = [
   {
     id: "ticket-assigned",
-    title: "Novo chamado atribuído a você",
-    description: "O chamado #4821 precisa de uma primeira resposta.",
+    title: "A new ticket has been assigned to you",
+    description: "Ticket #4821 needs an initial response.",
     createdAt: "2026-09-29T11:56:00-04:00",
     read: false,
     tone: "info",
-    metadata: "Atendimento",
+    metadata: "Support",
     icon: <UserRoundPlus />,
   },
   {
     id: "mention",
-    title: "Você recebeu uma menção",
-    description: "Ana mencionou você em um comentário sobre o acesso ao ERP.",
+    title: "You were mentioned",
+    description: "Ana mentioned you in a comment about ERP access.",
     createdAt: "2026-09-29T10:35:00-04:00",
     read: false,
     tone: "warning",
-    metadata: "Comentário",
+    metadata: "Comment",
     icon: <MessageSquareText />,
   },
   {
     id: "policy",
-    title: "Política de acesso atualizada",
-    description: "As novas regras de autenticação já estão disponíveis.",
+    title: "Access policy updated",
+    description: "The new authentication rules are now available.",
     createdAt: "2026-09-28T09:20:00-04:00",
     read: true,
     tone: "success",
-    metadata: "Segurança",
+    metadata: "Security",
     icon: <ShieldCheck />,
   },
 ];
@@ -45,20 +45,20 @@ const initialNotifications: NotificationCenterItem[] = [
 const initialPreferences: NotificationCenterPreference[] = [
   {
     id: "assignments",
-    label: "Atribuições",
-    description: "Avise quando uma atividade for atribuída a você.",
+    label: "Assignments",
+    description: "Notify me when a task is assigned to me.",
     enabled: true,
   },
   {
     id: "mentions",
-    label: "Menções e respostas",
-    description: "Avise quando alguém mencionar você ou responder a um comentário.",
+    label: "Mentions and replies",
+    description: "Notify me when someone mentions me or replies to a comment.",
     enabled: true,
   },
   {
     id: "product-news",
-    label: "Novidades do sistema",
-    description: "Receba comunicados sobre melhorias e novos recursos.",
+    label: "Product news",
+    description: "Receive announcements about improvements and new features.",
     enabled: false,
   },
 ];
@@ -66,7 +66,7 @@ const initialPreferences: NotificationCenterPreference[] = [
 export function Preview() {
   const [notifications, setNotifications] = useState(initialNotifications);
   const [preferences, setPreferences] = useState(initialPreferences);
-  const [feedback, setFeedback] = useState("Abra o sino para visualizar as notificações.");
+  const [feedback, setFeedback] = useState("Open the bell to view notifications.");
 
   function markAsRead(selected: NotificationCenterItem) {
     setNotifications((current) =>
@@ -74,7 +74,7 @@ export function Preview() {
         notification.id === selected.id ? { ...notification, read: true } : notification,
       ),
     );
-    setFeedback(`Marcada como lida: ${selected.title}`);
+    setFeedback(`Marked as read: ${selected.title}`);
   }
 
   return (
@@ -90,10 +90,10 @@ export function Preview() {
               unreadIds.has(notification.id) ? { ...notification, read: true } : notification,
             ),
           );
-          setFeedback("Todas as notificações foram marcadas como lidas.");
+          setFeedback("All notifications have been marked as read.");
         }}
         onNotificationOpen={(notification) =>
-          setFeedback(`Abrir destino da notificação: ${notification.title}`)
+          setFeedback(`Open notification destination: ${notification.title}`)
         }
         onPreferenceChange={(selected, enabled) => {
           setPreferences((current) =>
@@ -101,11 +101,11 @@ export function Preview() {
               preference.id === selected.id ? { ...preference, enabled } : preference,
             ),
           );
-          setFeedback(`${selected.label}: ${enabled ? "ativada" : "desativada"}`);
+          setFeedback(`${selected.label}: ${enabled ? "enabled" : "disabled"}`);
         }}
       />
       <div className="text-center">
-        <p className="text-sm font-medium">Central de notificações</p>
+        <p className="text-sm font-medium">Notification center</p>
         <p className="mt-1 text-xs text-muted-foreground" aria-live="polite">
           {feedback}
         </p>

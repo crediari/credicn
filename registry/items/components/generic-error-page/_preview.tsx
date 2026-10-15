@@ -5,13 +5,13 @@ import { useState } from "react";
 import { GenericErrorPage, type ErrorPageVariant } from "./generic-error-page";
 
 const variants: { label: string; value: ErrorPageVariant }[] = [
-  { label: "Genérico", value: "generic" },
+  { label: "Generic", value: "generic" },
   { label: "404", value: "not-found" },
   { label: "500", value: "server-error" },
   { label: "403", value: "forbidden" },
   { label: "401", value: "unauthorized" },
   { label: "Offline", value: "offline" },
-  { label: "Manutenção", value: "maintenance" },
+  { label: "Maintenance", value: "maintenance" },
 ];
 
 export function Preview() {
@@ -36,8 +36,8 @@ export function Preview() {
       <GenericErrorPage
         variant={variant}
         buttons={[
-          { label: "Voltar ao início", url: "#" },
-          { label: "Tentar novamente", url: "#", variant: "outline" },
+          { label: "Back to home", url: "#" },
+          { label: "Try again", url: "#", variant: "outline" },
         ]}
       />
     </div>

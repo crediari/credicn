@@ -46,7 +46,7 @@ function ApplicationsDropdown({
   const filteredSystems = filterApplications(systems, normalizedSearch);
   const filteredTools = filterApplications(tools, normalizedSearch);
   const showAccount =
-    !normalizedSearch || normalizeSearch(`Conta ${user?.name ?? ""}`).includes(normalizedSearch);
+    !normalizedSearch || normalizeSearch(`Account ${user?.name ?? ""}`).includes(normalizedSearch);
   const hasSearchResults = showAccount || filteredSystems.length > 0 || filteredTools.length > 0;
   useEffect(() => {
     if (isSearchOpen) {
@@ -73,7 +73,7 @@ function ApplicationsDropdown({
           variant="ghost"
           size="sm"
           className="size-10 rounded-full p-1"
-          aria-label="Apps da empresa"
+          aria-label="Company apps"
         >
           <Grip className="size-5 text-muted-foreground" />
         </Button>
@@ -87,7 +87,7 @@ function ApplicationsDropdown({
         <div className="mb-3 flex items-start justify-between gap-3">
           <div>
             <h3 className="text-sm font-medium">CrediSIS CrediAri Apps</h3>
-            <p className="text-xs text-muted-foreground">Seus apps corporativos em um só lugar</p>
+            <p className="text-xs text-muted-foreground">Your business apps in one place</p>
           </div>
 
           {!isLoading && hasApps && (
@@ -96,7 +96,7 @@ function ApplicationsDropdown({
               variant="ghost"
               size="icon"
               className="-mt-1 size-8 shrink-0"
-              aria-label={isSearchOpen ? "Fechar busca" : "Buscar apps e ferramentas"}
+              aria-label={isSearchOpen ? "Close search" : "Search apps and tools"}
               aria-expanded={isSearchOpen}
               onClick={toggleSearch}
             >
@@ -118,28 +118,28 @@ function ApplicationsDropdown({
                   event.stopPropagation();
                 }
               }}
-              placeholder="Buscar apps e ferramentas..."
-              aria-label="Buscar apps e ferramentas"
+              placeholder="Search apps and tools..."
+              aria-label="Search apps and tools"
               className="h-9 pl-9"
             />
           </div>
         )}
 
         {isLoading ? (
-          <div className="p-6 text-center text-sm text-muted-foreground">Carregando apps...</div>
+          <div className="p-6 text-center text-sm text-muted-foreground">Loading apps...</div>
         ) : !hasApps ? (
           <div className="mt-4 flex flex-col p-8 text-center text-sm text-muted-foreground">
             <span className="mx-auto mb-3 flex rounded-full bg-muted p-2">
               <ToolCase className="size-7 text-muted-foreground" />
             </span>
-            Os apps que você tiver acesso irão aparecer aqui...
+            Apps you have access to will appear here...
           </div>
         ) : !hasSearchResults ? (
           <div className="flex flex-col items-center p-8 text-center text-sm text-muted-foreground">
             <span className="mb-3 flex rounded-full bg-muted p-2">
               <SearchX className="size-6" />
             </span>
-            Nenhum app encontrado para “{search.trim()}”.
+            No apps found for “{search.trim()}”.
           </div>
         ) : (
           <ScrollArea className="h-[min(22rem,calc(var(--radix-dropdown-menu-content-available-height)-8rem))]">
@@ -159,7 +159,9 @@ function ApplicationsDropdown({
                           username={user?.name}
                           className="rounded-full"
                         />
-                        <span className="text-center text-xs leading-tight font-medium">Conta</span>
+                        <span className="text-center text-xs leading-tight font-medium">
+                          Account
+                        </span>
                       </div>
                     </a>
                   )}
@@ -172,9 +174,7 @@ function ApplicationsDropdown({
 
               {filteredTools.length > 0 && (
                 <div>
-                  <p className="mb-2 px-1 text-xs font-semibold text-muted-foreground">
-                    Ferramentas
-                  </p>
+                  <p className="mb-2 px-1 text-xs font-semibold text-muted-foreground">Tools</p>
                   <div className="grid grid-cols-4 gap-2">
                     {filteredTools.map((app) => (
                       <ApplicationCard key={app.id} app={app} />
@@ -220,7 +220,7 @@ function normalizeSearch(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/gu, "")
-    .toLocaleLowerCase("pt-BR")
+    .toLocaleLowerCase("en-US")
     .trim();
 }
 export {

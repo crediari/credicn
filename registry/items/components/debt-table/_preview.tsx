@@ -53,9 +53,7 @@ export function Preview() {
   return (
     <div className="flex w-full flex-col gap-3">
       <DebtTable rows={rows} onRowClick={(row) => setSelected(row.name)} />
-      {selected ? (
-        <p className="text-sm text-muted-foreground">Linha selecionada: {selected}</p>
-      ) : null}
+      {selected ? <p className="text-sm text-muted-foreground">Selected row: {selected}</p> : null}
     </div>
   );
 }

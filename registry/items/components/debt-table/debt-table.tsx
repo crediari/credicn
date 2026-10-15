@@ -47,7 +47,7 @@ const severeDelayDays = 50;
 const pageSizeOptions = [25, 50, 100] as const;
 
 function formatCurrencyBRL(value: number) {
-  return new Intl.NumberFormat("pt-BR", {
+  return new Intl.NumberFormat("en-US", {
     style: "currency",
     currency: "BRL",
   }).format(value);
@@ -57,7 +57,7 @@ function normalizeSearch(value: string) {
   return value
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/gu, "")
-    .toLocaleLowerCase("pt-BR")
+    .toLocaleLowerCase("en-US")
     .trim();
 }
 
@@ -123,7 +123,7 @@ function DebtTable({
     return visible.toSorted((a, b) => {
       const direction = sortDirection === "asc" ? 1 : -1;
       if (sortColumn === "name" || sortColumn === "pa") {
-        return a[sortColumn].localeCompare(b[sortColumn], "pt-BR") * direction;
+        return a[sortColumn].localeCompare(b[sortColumn], "en-US") * direction;
       }
       return (a[sortColumn] - b[sortColumn]) * direction;
     });
@@ -153,8 +153,8 @@ function DebtTable({
             setSearch(event.target.value);
             setPage(1);
           }}
-          placeholder={showPa ? "Buscar por nome, conta ou PA" : "Buscar por nome ou conta"}
-          aria-label={showPa ? "Buscar por nome, conta ou PA" : "Buscar por nome ou conta"}
+          placeholder={showPa ? "Search by name, account, or PA" : "Search by name or account"}
+          aria-label={showPa ? "Search by name, account, or PA" : "Search by name or account"}
         />
         <Select
           value={String(pageSize)}
@@ -166,14 +166,14 @@ function DebtTable({
             }
           }}
         >
-          <SelectTrigger aria-label="Registros por página">
-            <SelectValue placeholder="Registros por página" />
+          <SelectTrigger aria-label="Rows per page">
+            <SelectValue placeholder="Rows per page" />
           </SelectTrigger>
           <SelectContent>
             <SelectGroup>
               {pageSizeOptions.map((size) => (
                 <SelectItem key={size} value={String(size)}>
-                  {size} por página
+                  {size} per page
                 </SelectItem>
               ))}
             </SelectGroup>
@@ -186,13 +186,13 @@ function DebtTable({
           <TableHeader className="bg-muted/60">
             <TableRow>
               <SortableHeader
-                label="Titular"
+                label="Account holder"
                 active={sortColumn === "name"}
                 direction={sortDirection}
                 onSort={() => handleSort("name")}
               />
               <SortableHeader
-                label="Conta"
+                label="Account"
                 active={false}
                 direction={sortDirection}
                 sortable={false}
@@ -207,13 +207,13 @@ function DebtTable({
                 />
               ) : null}
               <SortableHeader
-                label="Saldo"
+                label="Balance"
                 active={sortColumn === "invoiceBill"}
                 direction={sortDirection}
                 onSort={() => handleSort("invoiceBill")}
               />
               <SortableHeader
-                label="Atraso"
+                label="Days overdue"
                 active={sortColumn === "delayedDays"}
                 direction={sortDirection}
                 onSort={() => handleSort("delayedDays")}
@@ -242,20 +242,20 @@ function DebtTable({
                 <TableCell>{row.account}</TableCell>
                 {showPa ? <TableCell>{row.pa}</TableCell> : null}
                 <TableCell>{formatCurrencyBRL(row.invoiceBill)}</TableCell>
-                <TableCell>{row.delayedDays.toLocaleString("pt-BR")} dias</TableCell>
+                <TableCell>{row.delayedDays.toLocaleString("en-US")} days</TableCell>
               </TableRow>
             ))}
             {!loading && !error && pageRows.length === 0 ? (
               <TableRow>
                 <TableCell className="h-24 text-center text-muted-foreground" colSpan={columnCount}>
-                  Nenhum registro encontrado.
+                  No records found.
                 </TableCell>
               </TableRow>
             ) : null}
             {loading ? (
               <TableRow>
                 <TableCell className="h-24 text-center text-muted-foreground" colSpan={columnCount}>
-                  Carregando registros...
+                  Loading rows...
                 </TableCell>
               </TableRow>
             ) : null}
@@ -273,7 +273,7 @@ function DebtTable({
       {filteredRows.length > pageSize ? (
         <div className="mt-6 flex items-center justify-between">
           <span className="mr-2 text-sm">
-            Encontrados <strong>{filteredRows.length}</strong> usuário(s)
+            <strong>{filteredRows.length}</strong> users found
           </span>
           <div className="flex items-center">
             <Button
@@ -281,19 +281,19 @@ function DebtTable({
               size="icon"
               disabled={currentPage === 1}
               onClick={() => setPage(Math.max(currentPage - 1, 1))}
-              aria-label="Página anterior"
+              aria-label="Previous page"
             >
               <ChevronLeft />
             </Button>
             <span className="mx-2">
-              Página {currentPage} de {totalPages}
+              Page {currentPage} of {totalPages}
             </span>
             <Button
               type="button"
               size="icon"
               disabled={currentPage >= totalPages}
               onClick={() => setPage(Math.min(currentPage + 1, totalPages))}
-              aria-label="Próxima página"
+              aria-label="Next page"
             >
               <ChevronRight />
             </Button>

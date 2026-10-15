@@ -62,11 +62,11 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
     getItemKeywords,
     renderItem,
     isItemDisabled,
-    placeholder = "Selecionar...",
-    searchPlaceholder = "Pesquisar...",
-    emptyMessage = "Nenhum resultado encontrado",
-    loadingMessage = "Buscando...",
-    errorMessage = "Erro ao carregar",
+    placeholder = "Select...",
+    searchPlaceholder = "Search...",
+    emptyMessage = "No results found",
+    loadingMessage = "Searching...",
+    errorMessage = "Failed to load",
     isLoading = false,
     isError = false,
     disabled = false,
@@ -149,7 +149,7 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
       if (props.value.length === 1) {
         return getItemLabel(props.value[0]);
       }
-      return `${props.value.length} selecionados`;
+      return `${props.value.length} selected`;
     }
     if (!props.value) {
       return <span className="text-muted-foreground">{placeholder}</span>;
@@ -216,7 +216,7 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
                       data-checked={isSelected}
                       aria-selected={isSelected}
                       onSelect={() => handleItemSelect(item)}
-                      className="min-h-10 rounded-lg py-2"
+                      className="min-h-10 py-2"
                     >
                       <div className="min-w-0 flex-1">
                         {renderItem
@@ -231,8 +231,8 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
 
             {!isLoading && !isError && hiddenResultCount > 0 && (
               <div className="border-t px-3 py-2 text-xs text-muted-foreground">
-                Mostrando {visibleItems.length} de {filteredItems.length} resultados. Refine a busca
-                para ver mais.
+                Showing {visibleItems.length} of {filteredItems.length} results. Refine your search
+                to see more.
               </div>
             )}
           </Command>

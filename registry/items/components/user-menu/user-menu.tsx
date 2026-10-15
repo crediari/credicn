@@ -50,9 +50,9 @@ type UserMenuProps = {
   canAdminister?: boolean;
 };
 const themes = [
-  { value: "light", label: "Tema claro", icon: Sun },
-  { value: "dark", label: "Tema escuro", icon: Moon },
-  { value: "system", label: "Tema do sistema", icon: Monitor },
+  { value: "light", label: "Light theme", icon: Sun },
+  { value: "dark", label: "Dark theme", icon: Moon },
+  { value: "system", label: "System theme", icon: Monitor },
 ] as const;
 function UserMenu({
   user,
@@ -88,7 +88,7 @@ function UserMenu({
       <DropdownMenuTrigger asChild>
         <Button
           variant="ghost"
-          aria-label="Abrir menu da conta"
+          aria-label="Open account menu"
           className={cn(
             "group shrink-0 data-[state=open]:bg-accent",
             isCompact && "size-11 rounded-full border border-border/80 bg-muted/40 p-1",
@@ -104,13 +104,13 @@ function UserMenu({
           />
           {!isCompact && !isSidebar && (
             <span className="hidden max-w-28 truncate text-sm font-medium sm:block">
-              {firstName || "Minha conta"}
+              {firstName || "My account"}
             </span>
           )}
           {isSidebar && (
             <span className="flex min-w-0 flex-1 flex-col items-start">
               <span className="w-full truncate text-sm font-medium">
-                {user?.name || "Minha conta"}
+                {user?.name || "My account"}
               </span>
               {user?.email && (
                 <span className="w-full truncate text-xs text-muted-foreground">{user.email}</span>
@@ -139,8 +139,8 @@ function UserMenu({
         <div className="flex flex-col items-center px-3 pt-3 pb-5 text-center">
           <a
             href={profileHref}
-            aria-label="Editar perfil pessoal"
-            title="Editar perfil pessoal"
+            aria-label="Edit profile"
+            title="Edit profile"
             className="group/avatar relative mb-3 rounded-full focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none"
           >
             <UserAvatar
@@ -165,31 +165,31 @@ function UserMenu({
         <DropdownMenuItem className="min-h-11 gap-3 rounded-full border px-4" asChild>
           <a href={profileHref}>
             <UserRound className="size-4" />
-            Minha conta
+            My account
           </a>
         </DropdownMenuItem>
 
         <DropdownMenuGroup
           className="my-3 rounded-3xl bg-muted/20 p-1.5 dark:bg-muted/60"
-          aria-label="Atalhos da conta"
+          aria-label="Account shortcuts"
         >
           <DropdownMenuItem className="min-h-11 gap-3 rounded-3xl px-3" asChild>
             <a href={securityHref}>
               <ShieldCheck className="size-4" />
-              Segurança
+              Security
             </a>
           </DropdownMenuItem>
           <DropdownMenuItem className="min-h-11 gap-3 rounded-3xl px-3" asChild>
             <a href={applicationsHref}>
               <LayoutGrid className="size-4" />
-              Minhas aplicações
+              My applications
             </a>
           </DropdownMenuItem>
           {canAdminister && (
             <DropdownMenuItem className="min-h-11 gap-3 rounded-3xl px-3" asChild>
               <a href={adminUsersHref}>
                 <UsersRound className="size-4" />
-                Gerenciar usuários
+                Manage users
               </a>
             </DropdownMenuItem>
           )}
@@ -199,7 +199,7 @@ function UserMenu({
         <div className="flex items-center justify-between gap-2 px-3 py-1">
           <span id={themeLabelId} className="flex items-center gap-3 text-sm font-medium">
             <Palette className="size-4 text-muted-foreground" />
-            Tema
+            Theme
           </span>
           <DropdownMenuRadioGroup
             aria-labelledby={themeLabelId}
@@ -228,7 +228,7 @@ function UserMenu({
           className="min-h-11 justify-center gap-2 rounded-full border border-destructive/30 dark:border-destructive/50"
         >
           <LogOut className="size-4" />
-          Sair da conta
+          Sign out
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

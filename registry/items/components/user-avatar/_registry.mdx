@@ -12,22 +12,22 @@ files:
     type: registry:lib
 ---
 
-Passe `username` e `userimage` opcional. Nomes completos usam as iniciais do primeiro e último
-nome; nomes simples, como `João`, usam apenas `J`. Espaços excedentes são ignorados e as iniciais
-são normalizadas para maiúsculas.
+Pass `username` and an optional `userimage`. Full names use the initials of the first and last
+names; single names, such as `John`, use only `J`. Extra whitespace is ignored, and initials
+are normalized to uppercase.
 
 ```tsx
 import { UserAvatar } from "@/components/ui/user-avatar";
 
 <UserAvatar username="Ana Costa" userimage={null} />
-<UserAvatar username="João" userimage={null} />
+<UserAvatar username="John" userimage={null} />
 ```
 
 ## Avatar Group
 
-`UserAvatarGroup` cria agrupamentos sobrepostos e reutiliza o mesmo fallback em gradiente, com
-tons claros e escuros derivados de `primary` e texto em `primary-foreground` do tema da aplicação. Use
-`max` para limitar os avatares visíveis; o restante aparece automaticamente como `+N`.
+`UserAvatarGroup` creates overlapping groups and reuses the same gradient fallback, with light
+and dark tones derived from `primary` and text in the host theme’s `primary-foreground`. Use
+`max` to limit visible avatars; the remainder automatically appears as `+N`.
 
 ```tsx
 import { UserAvatarGroup } from "@/components/ui/user-avatar";
@@ -35,7 +35,7 @@ import { UserAvatarGroup } from "@/components/ui/user-avatar";
 <UserAvatarGroup
   users={[
     { id: 1, username: "Ana Costa", userimage: null },
-    { id: 2, username: "João", userimage: null },
+    { id: 2, username: "John", userimage: null },
     { id: 3, username: "Maria Silva", userimage: "/avatars/maria.jpg" },
     { id: 4, username: "Carlos Oliveira", userimage: null },
   ]}
@@ -44,14 +44,14 @@ import { UserAvatarGroup } from "@/components/ui/user-avatar";
 />
 ```
 
-Os tamanhos `sm`, `default` e `lg` são aplicados a todos os avatares e ao contador. Para
-personalização, use `avatarClassName`, `overflowClassName` ou `renderOverflow`.
+The `sm`, `default`, and `lg` sizes apply to all avatars and the counter. Customize them with
+`avatarClassName`, `overflowClassName`, or `renderOverflow`.
 
 ```tsx
 <UserAvatarGroup
   users={team}
   max={4}
   size="lg"
-  renderOverflow={(remaining) => `${remaining} outros`}
+  renderOverflow={(remaining) => `${remaining} others`}
 />
 ```

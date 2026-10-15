@@ -14,16 +14,16 @@ export function Preview() {
   return (
     <Dialog>
       <DialogTrigger asChild>
-        <Button variant="outline">Abrir diálogo</Button>
+        <Button variant="outline">Open dialog</Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Confirmar ação</DialogTitle>
-          <DialogDescription>Essa ação pode ser desfeita depois.</DialogDescription>
+          <DialogTitle>Confirm action</DialogTitle>
+          <DialogDescription>You can undo this action later.</DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button variant="outline">Cancelar</Button>
-          <Button>Confirmar</Button>
+          <Button variant="outline">Cancel</Button>
+          <Button>Confirm</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -115,14 +115,14 @@ let scrollLockCount = 0;
 let scrollLockSnapshot: ScrollLockSnapshot | null = null;
 
 const defaultLabels: FileViewerLabels = {
-  close: "Fechar",
-  download: "Baixar arquivo",
-  loading: "Carregando visualização...",
-  next: "Próximo arquivo",
-  previous: "Arquivo anterior",
+  close: "Close",
+  download: "Download file",
+  loading: "Loading preview...",
+  next: "Next file",
+  previous: "Previous file",
   unsupportedDescription:
-    "Este formato não pode ser exibido no navegador, mas você ainda pode baixá-lo.",
-  unsupportedTitle: "Pré-visualização indisponível",
+    "This format cannot be previewed in the browser, but you can still download it.",
+  unsupportedTitle: "Preview unavailable",
 };
 
 const extensionGroups = {
@@ -524,7 +524,7 @@ function FileViewer({
 
   return (
     <dialog
-      aria-label={currentFile ? `Visualização de ${currentFile.name}` : "Visualizador de arquivos"}
+      aria-label={currentFile ? `Preview of ${currentFile.name}` : "File viewer"}
       className={cn(
         "dark fixed inset-0 z-50 m-0 hidden h-dvh max-h-none w-screen max-w-none bg-transparent p-0 text-foreground backdrop:bg-background/80 open:flex",
         className,
@@ -568,7 +568,7 @@ function FileViewer({
           <FileTypeIcon file={currentFile} className="size-5 shrink-0 text-muted-foreground" />
           <div className="min-w-0 flex-1">
             <h2 className="truncate text-sm font-semibold sm:text-base">
-              {currentFile?.name ?? "Nenhum arquivo"}
+              {currentFile?.name ?? "No file"}
             </h2>
             <p className="flex gap-2 text-xs text-muted-foreground">
               {formatFileSize(currentFile?.size) && (
@@ -576,7 +576,7 @@ function FileViewer({
               )}
               {canNavigate && (
                 <span>
-                  {safeIndex + 1} de {files.length}
+                  {safeIndex + 1} of {files.length}
                 </span>
               )}
             </p>
@@ -615,7 +615,7 @@ function FileViewer({
           {!isLoading && Boolean(loadError) && (
             <ViewerMessage
               icon={<AlertCircle />}
-              title="Não foi possível carregar o arquivo"
+              title="Could not load the file"
               description={loadError instanceof Error ? loadError.message : undefined}
             />
           )}
@@ -630,7 +630,7 @@ function FileViewer({
           )}
 
           {!isLoading && !loadError && !currentFile && (
-            <ViewerMessage icon={<File />} title="Nenhum arquivo para visualizar" />
+            <ViewerMessage icon={<File />} title="No files to preview" />
           )}
 
           {!isLoading &&
@@ -650,7 +650,7 @@ function FileViewer({
                   <>
                     {isPdf && <div className="mx-0.5 h-5 w-px bg-border" />}
                     <ViewerButton
-                      label="Diminuir zoom"
+                      label="Zoom out"
                       shortcut="-"
                       disabled={imageZoom <= 0.25 || (isPdf && !pdfPageCount)}
                       onClick={() => setImageZoom((value) => Math.max(value - 0.25, 0.25))}
@@ -661,7 +661,7 @@ function FileViewer({
                       {Math.round(imageZoom * 100)}%
                     </span>
                     <ViewerButton
-                      label="Aumentar zoom"
+                      label="Zoom in"
                       shortcut="+"
                       disabled={imageZoom >= 4 || (isPdf && !pdfPageCount)}
                       onClick={() => setImageZoom((value) => Math.min(value + 0.25, 4))}
@@ -670,7 +670,7 @@ function FileViewer({
                     </ViewerButton>
                     {previewKind === "image" && (
                       <ViewerButton
-                        label="Girar imagem"
+                        label="Rotate image"
                         shortcut="R"
                         onClick={() => setImageRotation((value) => (value + 90) % 360)}
                       >
@@ -678,7 +678,7 @@ function FileViewer({
                       </ViewerButton>
                     )}
                     <ViewerButton
-                      label="Ajustar à tela"
+                      label="Fit to screen"
                       className="hidden sm:inline-flex"
                       shortcut="0"
                       disabled={isPdf && !pdfPageCount}
@@ -694,11 +694,11 @@ function FileViewer({
                   <span className="px-3 text-xs font-medium whitespace-nowrap">
                     {
                       {
-                        audio: "Áudio",
-                        video: "Vídeo",
-                        text: "Texto",
-                        spreadsheet: "Planilha",
-                        office: "Documento Office",
+                        audio: "Audio",
+                        video: "Video",
+                        text: "Text",
+                        spreadsheet: "Spreadsheet",
+                        office: "Office document",
                       }[previewKind]
                     }
                   </span>
@@ -776,8 +776,8 @@ function FileViewer({
       return (
         <ViewerMessage
           icon={<FileText />}
-          title="Pré-visualização Office indisponível"
-          description="Configure a conversão para PDF em officePreview. O arquivo original continua disponível para download."
+          title="Office preview unavailable"
+          description="Configure PDF conversion with officePreview. The original file is still available to download."
         />
       );
     }
@@ -791,8 +791,8 @@ function FileViewer({
             controls
             src={sourceUrl}
           >
-            <track kind="captions" src={emptyCaptionsUrl} srcLang="pt-BR" />
-            Seu navegador não suporta a reprodução deste vídeo.
+            <track kind="captions" src={emptyCaptionsUrl} srcLang="en" />
+            Your browser does not support video playback.
           </video>
         </div>
       );
@@ -808,8 +808,8 @@ function FileViewer({
             <FileAudio className="mx-auto mb-5 size-14 text-muted-foreground" />
             <p className="mb-6 truncate font-medium">{currentFile.name}</p>
             <audio data-viewer-content className="w-full" controls src={sourceUrl}>
-              <track kind="captions" src={emptyCaptionsUrl} srcLang="pt-BR" />
-              Seu navegador não suporta a reprodução deste áudio.
+              <track kind="captions" src={emptyCaptionsUrl} srcLang="en" />
+              Your browser does not support audio playback.
             </audio>
           </div>
         </div>
@@ -862,7 +862,7 @@ function ViewerToolbar({ children }: { children: ReactNode }) {
     <div
       data-viewer-content
       role="toolbar"
-      aria-label="Controles da visualização"
+      aria-label="Preview controls"
       className="absolute bottom-5 left-1/2 z-20 flex max-w-[calc(100%-1.5rem)] -translate-x-1/2 items-center gap-1 rounded-full border border-border bg-popover/95 p-1.5 text-popover-foreground shadow-xl backdrop-blur-md"
     >
       {children}
@@ -899,7 +899,7 @@ function PageControls({
         }}
       >
         <input
-          aria-label="Página atual"
+          aria-label="Current page"
           className="h-8 w-9 rounded-md border border-transparent bg-transparent text-center focus:border-input focus:bg-background focus:outline-ring"
           inputMode="numeric"
           type="text"
@@ -910,7 +910,7 @@ function PageControls({
         />
         <span className="whitespace-nowrap text-muted-foreground">/ {count || "—"}</span>
         <button type="submit" className="sr-only" disabled={!count}>
-          Ir para página
+          Go to page
         </button>
       </form>
     </div>
@@ -1048,7 +1048,7 @@ function PdfPreview({
     <div
       ref={viewportRef}
       className="relative h-full w-full overflow-auto overscroll-contain focus-visible:outline-none"
-      aria-label={`Páginas de ${name}`}
+      aria-label={`Pages of ${name}`}
       role="region"
       tabIndex={0}
       aria-busy={!pdf && !error}
@@ -1077,7 +1077,7 @@ function PdfPreview({
         <div className="absolute inset-0 flex items-center justify-center">
           <ViewerMessage
             icon={error ? <AlertCircle /> : <LoaderCircle className="animate-spin" />}
-            title={error ? "Não foi possível ler o PDF" : "Carregando PDF..."}
+            title={error ? "Could not read the PDF" : "Loading PDF..."}
             description={error instanceof Error ? error.message : undefined}
           />
         </div>
@@ -1186,13 +1186,13 @@ function PdfPage({
       aria-busy={nearViewport && loading}
     >
       <div ref={canvasHostRef} />
-      <div className="sr-only" role="document" aria-label={`${name}, página ${page}`}>
+      <div className="sr-only" role="document" aria-label={`${name}, page ${page}`}>
         {text}
       </div>
       {nearViewport && (loading || !!error) && (
         <div className="absolute inset-0 flex items-center justify-center">
           {error ? (
-            <ViewerMessage icon={<AlertCircle />} title={`Não foi possível ler a página ${page}`} />
+            <ViewerMessage icon={<AlertCircle />} title={`Could not read page ${page}`} />
           ) : (
             <LoaderCircle className="size-6 animate-spin text-muted-foreground" />
           )}
@@ -1343,7 +1343,7 @@ function ImagePreview({
     >
       {failed ? (
         <div className="flex h-full items-center justify-center">
-          <ViewerMessage icon={<AlertCircle />} title="Não foi possível ler a imagem" />
+          <ViewerMessage icon={<AlertCircle />} title="Could not read the image" />
         </div>
       ) : (
         <div className="grid min-h-full w-max min-w-full place-items-center">
@@ -1444,8 +1444,7 @@ function TextPreview({ source }: { source: FileSource }) {
     async function loadText() {
       try {
         const buffer = await sourceToArrayBuffer(source, controller.signal);
-        if (buffer.byteLength > 5_000_000)
-          throw new Error("O arquivo de texto excede o limite de 5 MB.");
+        if (buffer.byteLength > 5_000_000) throw new Error("The text file exceeds the 5 MB limit.");
         if (!controller.signal.aborted) {
           setContent(new TextDecoder().decode(buffer));
           setIsReady(true);
@@ -1464,7 +1463,7 @@ function TextPreview({ source }: { source: FileSource }) {
       <div className="flex h-full items-center justify-center">
         <ViewerMessage
           icon={<AlertCircle />}
-          title="Não foi possível ler o arquivo"
+          title="Could not read the file"
           description={error instanceof Error ? error.message : undefined}
         />
       </div>
@@ -1509,7 +1508,7 @@ function SpreadsheetPreview({ source, extension }: { source: FileSource; extensi
           const text = new TextDecoder().decode(buffer);
           nextSheets = [
             {
-              name: "Dados",
+              name: "Data",
               rows: parseDelimitedText(text, extension === "tsv" ? "\t" : undefined),
             },
           ];
@@ -1552,7 +1551,7 @@ function SpreadsheetPreview({ source, extension }: { source: FileSource; extensi
       <div className="flex h-full items-center justify-center">
         <ViewerMessage
           icon={<AlertCircle />}
-          title="Não foi possível ler a planilha"
+          title="Could not read the spreadsheet"
           description={error instanceof Error ? error.message : undefined}
         />
       </div>
@@ -1570,7 +1569,7 @@ function SpreadsheetPreview({ source, extension }: { source: FileSource; extensi
   if (!sheet) {
     return (
       <div className="flex h-full items-center justify-center">
-        <ViewerMessage icon={<FileSpreadsheet />} title="A planilha não possui abas visíveis" />
+        <ViewerMessage icon={<FileSpreadsheet />} title="The spreadsheet has no visible sheets" />
       </div>
     );
   }

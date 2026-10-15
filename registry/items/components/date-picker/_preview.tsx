@@ -12,12 +12,12 @@ export function Preview() {
   return (
     <div className="grid w-full max-w-md gap-6">
       <div className="grid gap-2">
-        <span className="text-sm font-medium">Data</span>
+        <span className="text-sm font-medium">Date</span>
         <DatePicker value={date} onChange={setDate} />
       </div>
 
       <div className="grid gap-2">
-        <span className="text-sm font-medium">Período</span>
+        <span className="text-sm font-medium">Period</span>
         <DatePicker type="range" value={period} onChange={setPeriod} />
       </div>
     </div>

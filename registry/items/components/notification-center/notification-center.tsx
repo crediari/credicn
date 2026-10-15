@@ -112,13 +112,13 @@ function NotificationCenter({
   loading = false,
   error,
   onRetry,
-  title = "Notificações",
-  description = "Acompanhe atualizações importantes e gerencie como deseja recebê-las.",
-  triggerLabel = "Abrir notificações",
-  emptyUnreadTitle = "Você está em dia!",
-  emptyReadTitle = "As notificações lidas aparecerão aqui.",
+  title = "Notifications",
+  description = "Track important updates and manage how you receive them.",
+  triggerLabel = "Open notifications",
+  emptyUnreadTitle = "You’re all caught up!",
+  emptyReadTitle = "Read notifications will appear here.",
   closeOnNotificationOpen = true,
-  locale = "pt-BR",
+  locale = "en-US",
   formatTimestamp,
   className,
   triggerClassName,
@@ -157,7 +157,7 @@ function NotificationCenter({
           variant="ghost"
           size="icon"
           className={cn("relative rounded-full", triggerClassName)}
-          aria-label={unreadCount > 0 ? `${triggerLabel}: ${unreadCount} não lidas` : triggerLabel}
+          aria-label={unreadCount > 0 ? `${triggerLabel}: ${unreadCount} unread` : triggerLabel}
         >
           <Bell />
           {unreadCount > 0 && (
@@ -181,14 +181,14 @@ function NotificationCenter({
           <div className="border-b px-4 py-2.5">
             <TabsList variant="line" className="w-full justify-start">
               <TabsTrigger value="unread">
-                Não lidas
+                Unread
                 {unreadCount > 0 && <Badge variant="secondary">{unreadCount}</Badge>}
               </TabsTrigger>
-              <TabsTrigger value="read">Lidas</TabsTrigger>
+              <TabsTrigger value="read">Read</TabsTrigger>
               {hasPreferences && (
                 <TabsTrigger value="preferences">
                   <SlidersHorizontal />
-                  Preferências
+                  Preferences
                 </TabsTrigger>
               )}
             </TabsList>
@@ -219,7 +219,7 @@ function NotificationCenter({
                   onClick={() => void onMarkAllAsRead(unreadNotifications)}
                 >
                   {markingAllAsRead ? <LoaderCircle className="animate-spin" /> : <CheckCheck />}
-                  Marcar todas como lidas
+                  Mark all as read
                 </Button>
               </div>
             )}
@@ -305,7 +305,7 @@ function NotificationList({
     return (
       <div className="flex min-h-64 items-center justify-center gap-2 text-sm text-muted-foreground">
         <LoaderCircle className="animate-spin" />
-        Carregando notificações...
+        Loading notifications...
       </div>
     );
   }
@@ -316,13 +316,13 @@ function NotificationList({
           <CircleAlert />
         </span>
         <div>
-          <p className="text-sm font-medium">Não foi possível carregar as notificações</p>
+          <p className="text-sm font-medium">Could not load notifications</p>
           <p className="mt-1 text-xs text-muted-foreground">{error}</p>
         </div>
         {onRetry && (
           <Button variant="outline" size="sm" onClick={onRetry}>
             <RefreshCw />
-            Tentar novamente
+            Try again
           </Button>
         )}
       </div>
@@ -374,7 +374,7 @@ function NotificationList({
                     </span>
                     {!notification.read && (
                       <span
-                        aria-label="Não lida"
+                        aria-label="Unread"
                         className="mt-1.5 size-2 shrink-0 rounded-full bg-primary"
                       />
                     )}
@@ -397,7 +397,7 @@ function NotificationList({
                   variant="ghost"
                   size="icon-xs"
                   className="absolute top-1/2 right-2 -translate-y-1/2 opacity-0 transition-opacity group-focus-within:opacity-100 group-hover:opacity-100"
-                  aria-label={`Marcar ${notification.title} como lida`}
+                  aria-label={`Mark ${notification.title} as read`}
                   disabled={isPending}
                   onClick={() => void onMarkAsRead?.(notification)}
                 >
@@ -413,11 +413,11 @@ function NotificationList({
 }
 function formatNotificationTimestamp(
   createdAt: NotificationCenterItem["createdAt"],
-  locale = "pt-BR",
+  locale = "en-US",
 ) {
   const date = createdAt instanceof Date ? createdAt : new Date(createdAt);
   const differenceInSeconds = Math.round((date.getTime() - Date.now()) / 1000);
-  if (Number.isNaN(differenceInSeconds)) return "Data desconhecida";
+  if (Number.isNaN(differenceInSeconds)) return "Unknown date";
   const formatter = new Intl.RelativeTimeFormat(locale, { numeric: "auto" });
   const divisions = [
     { amount: 60, unit: "second" },

@@ -1,23 +1,23 @@
 ---
-title: Implementando notificações
-description: Arquitetura recomendada para persistência, APIs, preferências e consumo de notificações nos sistemas internos.
+title: Implementing Notifications
+description: Recommended architecture for notification persistence, APIs, preferences, and consumption in internal systems.
 order: 5
-group: Guias
+group: Guides
 ---
 
-Este guia descreve uma base reutilizável para notificações dentro dos sistemas internos. O
-[`NotificationCenter`](/components/notification-center) resolve a interface, mas a aplicação
-continua responsável por autorização, persistência, entrega e navegação.
+This guide describes a reusable foundation for notifications in internal systems.
+[`NotificationCenter`](/components/notification-center) provides the interface, while the application
+remains responsible for authorization, persistence, delivery, and navigation.
 
-<Callout title="Princípio principal">
-  Separe o conteúdo da notificação do estado de entrega de cada destinatário. Uma notificação pode
-  ter vários destinatários, mas cada pessoa possui seu próprio estado de leitura.
+<Callout title="Core principle">
+  Separate notification content from each recipient’s delivery state. A notification can have
+  multiple recipients, but each person has their own read status.
 </Callout>
 
-## Modelo de dados
+## Data Model
 
-O exemplo abaixo usa Prisma apenas como referência. A mesma separação funciona em qualquer banco
-relacional.
+The example below uses Prisma as a reference. The same separation works with any relational
+database.
 
 ```prisma
 enum NotificationTone {
@@ -80,60 +80,60 @@ model NotificationPreference {
 }
 ```
 
-`eventKey` deve representar um evento estável, como `ticket.assigned` ou `comment.mentioned`.
-Evite criar uma coluna booleana para cada nova preferência: a combinação `eventKey + channel`
-evolui sem exigir uma migration para cada tipo de evento.
+`eventKey` should represent a stable event, such as `ticket.assigned` or `comment.mentioned`.
+Avoid adding a boolean column for each new preference: the `eventKey + channel` combination
+can evolve without a migration for every event type.
 
-`action` deve conter dados declarativos, por exemplo `{ "type": "ticket", "ticketId": "..." }`.
-O frontend converte esse contrato em navegação. Não armazene callbacks, HTML executável ou URLs
-externas sem validação.
+`action` should contain declarative data, such as `{ "type": "ticket", "ticketId": "..." }`.
+The frontend maps this contract to navigation. Do not store callbacks, executable HTML, or
+unvalidated external URLs.
 
-## Criação e entrega
+## Creation and Delivery
 
-Uma operação de negócio deve produzir um evento e não conhecer detalhes da UI. O fluxo recomendado
-é:
+A business operation should produce an event without depending on UI details. The recommended
+flow is:
 
-1. Concluir a alteração de negócio e registrar um evento/outbox na mesma transação.
-2. Resolver destinatários no backend, respeitando escopo e permissões atuais.
-3. Consultar preferências por `eventKey` e canal.
-4. Criar `Notification` e `NotificationRecipient` para o canal in-app.
-5. Enfileirar e-mail ou push fora da transação principal.
-6. Publicar um aviso em tempo real somente depois do commit.
+1. Complete the business change and record an event or outbox entry in the same transaction.
+2. Resolve recipients on the backend, respecting current scope and permissions.
+3. Check preferences by `eventKey` and channel.
+4. Create `Notification` and `NotificationRecipient` for the in-app channel.
+5. Queue email or push delivery outside the main transaction.
+6. Publish a real-time signal only after the commit.
 
-Use uma `dedupeKey` quando o produtor puder repetir o mesmo evento. Para fluxos críticos, prefira
-o padrão outbox a uma chamada direta para e-mail ou WebSocket: assim uma falha externa não desfaz
-a operação principal e o envio pode ser repetido com segurança.
+Use a `dedupeKey` when the producer may repeat an event. For critical flows, prefer the outbox
+pattern over a direct email or WebSocket call: an external failure then leaves the main operation
+intact, and delivery can be retried safely.
 
-## Contrato HTTP
+## HTTP Contract
 
-Uma API pequena costuma ser suficiente:
+A small API is usually enough:
 
-| Método  | Rota                                                   | Finalidade                                 |
-| ------- | ------------------------------------------------------ | ------------------------------------------ |
-| `GET`   | `/api/notifications?status=unread&cursor=...&limit=30` | Lista paginada do usuário autenticado      |
-| `GET`   | `/api/notifications/unread-count`                      | Contador leve para o header                |
-| `PATCH` | `/api/notifications/:id/read`                          | Marca uma notificação como lida            |
-| `POST`  | `/api/notifications/read-all`                          | Marca como lidas as notificações elegíveis |
-| `GET`   | `/api/notification-preferences`                        | Preferências efetivas do usuário           |
-| `PUT`   | `/api/notification-preferences/:eventKey/:channel`     | Atualiza uma preferência                   |
+| Method  | Route                                                  | Purpose                                   |
+| ------- | ------------------------------------------------------ | ----------------------------------------- |
+| `GET`   | `/api/notifications?status=unread&cursor=...&limit=30` | Paginated list for the authenticated user |
+| `GET`   | `/api/notifications/unread-count`                      | Lightweight header counter                |
+| `PATCH` | `/api/notifications/:id/read`                          | Mark a notification as read               |
+| `POST`  | `/api/notifications/read-all`                          | Mark eligible notifications as read       |
+| `GET`   | `/api/notification-preferences`                        | Effective user preferences                |
+| `PUT`   | `/api/notification-preferences/:eventKey/:channel`     | Update a preference                       |
 
-Nunca aceite `userId` do navegador como autoridade. Obtenha o usuário da sessão e faça toda
-atualização com `WHERE userId = session.user.id`. Retorne `404` tanto para itens inexistentes
-quanto para itens pertencentes a outra pessoa, evitando revelar sua existência.
+Never trust a browser-supplied `userId` as authority. Resolve the user from the session and scope
+every update with `WHERE userId = session.user.id`. Return `404` for both missing items and items
+owned by someone else to avoid revealing their existence.
 
-Exemplo de resposta normalizada:
+Example of a normalized response:
 
 ```json
 {
   "items": [
     {
       "id": "notification-id",
-      "title": "Novo chamado atribuído",
-      "description": "O chamado #4821 precisa de uma primeira resposta.",
+      "title": "New ticket assigned",
+      "description": "Ticket #4821 needs an initial response.",
       "tone": "info",
       "createdAt": "2026-09-29T17:56:00.000Z",
       "read": false,
-      "metadata": "Atendimento",
+      "metadata": "Support",
       "action": { "type": "ticket", "ticketId": "4821" }
     }
   ],
@@ -142,12 +142,12 @@ Exemplo de resposta normalizada:
 }
 ```
 
-Use paginação por cursor baseada em `(createdAt, id)`. Paginação por offset fica cara e pode
-duplicar ou pular registros enquanto novas notificações chegam.
+Use cursor pagination based on `(createdAt, id)`. Offset pagination becomes expensive and can
+duplicate or skip records as new notifications arrive.
 
-## Hook de consulta
+## Query Hook
 
-Com TanStack Query, mantenha a consulta e as mutações fora do componente visual:
+With TanStack Query, keep queries and mutations outside the visual component:
 
 ```tsx
 function useNotifications() {
@@ -179,47 +179,48 @@ function useNotifications() {
 }
 ```
 
-Faça a mesma atualização otimista no contador do header. Em falha, restaure o snapshot anterior e
-mostre feedback; não deixe uma notificação visualmente lida quando o servidor rejeitou a operação.
+Apply the same optimistic update to the header counter. On failure, restore the previous snapshot
+and show feedback; do not leave a notification visually marked as read when the server rejected
+the operation.
 
-## Tempo real e sincronização
+## Real-Time Delivery and Synchronization
 
-SSE é uma boa opção quando o navegador apenas recebe eventos. WebSocket faz sentido quando o app
-já possui comunicação bidirecional. Em ambos os casos, envie somente um evento pequeno com o ID ou
-uma indicação de invalidação e consulte novamente a API como fonte de verdade.
+SSE is a good option when the browser only receives events. WebSocket makes sense when the app
+already uses bidirectional communication. In either case, send a small event containing the ID or
+an invalidation signal, then fetch the API again as the source of truth.
 
-- Reconecte com backoff e jitter.
-- Faça refetch ao recuperar foco ou conexão.
-- Mantenha polling como fallback quando tempo real não for necessário.
-- Não incremente o contador cegamente: eventos podem ser duplicados ou chegar fora de ordem.
-- Sincronize abas com `BroadcastChannel` ou invalidação compartilhada quando isso for relevante.
+- Reconnect with backoff and jitter.
+- Refetch when focus or connectivity returns.
+- Keep polling as a fallback when real-time delivery is unnecessary.
+- Do not blindly increment the counter: events can be duplicated or arrive out of order.
+- Synchronize tabs with `BroadcastChannel` or shared invalidation when appropriate.
 
-## Preferências
+## Preferences
 
-Defina defaults no servidor para que usuários novos tenham comportamento previsível. Diferencie:
+Set server defaults so new users get predictable behavior. Distinguish between:
 
-- preferências editáveis, como novidades e atualizações comuns;
-- comunicações obrigatórias, como segurança e indisponibilidade, que devem aparecer desabilitadas
-  na UI com uma explicação;
-- canais independentes (`IN_APP`, `EMAIL`, `PUSH`). Desativar e-mail não deve implicitamente
-  desativar a notificação dentro do app.
+- Editable preferences, such as product news and routine updates.
+- Mandatory communications, such as security and outages, which should appear disabled in the UI
+  with an explanation.
+- Independent channels (`IN_APP`, `EMAIL`, `PUSH`). Disabling email should not implicitly disable
+  in-app notifications.
 
-O endpoint de preferências deve devolver o estado efetivo, incluindo defaults ainda não
-materializados no banco. Faça rollback visual do `Switch` quando a persistência falhar.
+The preferences endpoint should return the effective state, including defaults that have not yet
+been stored in the database. Roll back the `Switch` visually when persistence fails.
 
-## Segurança, privacidade e operação
+## Security, Privacy, and Operations
 
-- Renderize mensagens como texto. Se rich text for indispensável, sanitize no servidor e no
-  cliente com uma allowlist pequena.
-- Não inclua segredos ou dados sensíveis no payload de WebSocket, logs ou push.
-- Revalide autorização quando a ação for aberta; receber uma notificação não concede acesso ao
-  recurso para sempre.
-- Defina retenção e limpeza para notificações antigas e expiradas.
-- Registre métricas de criação, entrega, falha, leitura e tamanho das filas.
-- Teste isolamento por usuário, deduplicação, leitura concorrente, defaults de preferência,
-  reconexão e rollback otimista.
+- Render messages as text. If rich text is essential, sanitize it on both the server and client
+  using a small allowlist.
+- Keep secrets and sensitive data out of WebSocket payloads, logs, and push messages.
+- Revalidate authorization when an action opens; receiving a notification does not grant permanent
+  access to the resource.
+- Define retention and cleanup rules for old and expired notifications.
+- Track creation, delivery, failure, read, and queue-size metrics.
+- Test user isolation, deduplication, concurrent reads, preference defaults, reconnection, and
+  optimistic rollback.
 
-## Ligando os dados ao componente
+## Connecting Data to the Component
 
 ```tsx
 <NotificationCenter
@@ -239,6 +240,6 @@ materializados no banco. Faça rollback visual do `Switch` quando a persistênci
 />
 ```
 
-O componente deriva o contador a partir de `notifications`. Se o header consultar apenas um
-endpoint de contagem, carregue ao menos as notificações não lidas ao abrir o dialog para reconciliar
-o valor antes de renderizar a lista.
+The component derives its counter from `notifications`. If the header only queries a count
+endpoint, load at least the unread notifications when opening the dialog to reconcile the value
+before rendering the list.

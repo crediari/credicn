@@ -25,7 +25,7 @@ const users: User[] = [
 
 const cities: City[] = Array.from({ length: 1000 }, (_, index) => ({
   id: index + 1,
-  name: `Cidade ${String(index + 1).padStart(4, "0")}`,
+  name: `City ${String(index + 1).padStart(4, "0")}`,
   state: ["RO", "AC", "AM", "MT"][index % 4],
 }));
 
@@ -37,10 +37,8 @@ export function Preview() {
     <div className="grid w-full max-w-3xl gap-8 md:grid-cols-2">
       <div className="space-y-2">
         <div>
-          <p className="text-sm font-medium">Responsáveis</p>
-          <p className="text-xs text-muted-foreground">
-            Seleção múltipla com conteúdo customizado.
-          </p>
+          <p className="text-sm font-medium">Assignees</p>
+          <p className="text-xs text-muted-foreground">Multiple selection with custom content.</p>
         </div>
         <SelectPopover
           multiple
@@ -50,9 +48,9 @@ export function Preview() {
           getItemValue={(user) => user.id}
           getItemLabel={(user) => user.name}
           getItemKeywords={(user) => [user.email]}
-          placeholder="Selecionar usuários..."
+          placeholder="Select users..."
           renderValue={(value) =>
-            value.length === 1 ? value[0].name : `${value.length} responsáveis`
+            value.length === 1 ? value[0].name : `${value.length} assignees`
           }
           renderItem={(user) => (
             <div className="flex items-center gap-3">
@@ -70,8 +68,8 @@ export function Preview() {
 
       <div className="space-y-2">
         <div>
-          <p className="text-sm font-medium">Cidade</p>
-          <p className="text-xs text-muted-foreground">1.000 itens, no máximo 40 na DOM.</p>
+          <p className="text-sm font-medium">City</p>
+          <p className="text-xs text-muted-foreground">1,000 items, up to 40 in the DOM.</p>
         </div>
         <SelectPopover
           items={cities}
@@ -81,7 +79,7 @@ export function Preview() {
           getItemLabel={(item) => item.name}
           getItemKeywords={(item) => [item.state]}
           resultLimit={40}
-          placeholder="Selecionar cidade..."
+          placeholder="Select a city..."
           renderItem={(item) => (
             <div className="flex items-center justify-between gap-3">
               <span className="truncate">{item.name}</span>

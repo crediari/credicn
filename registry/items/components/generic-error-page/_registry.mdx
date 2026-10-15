@@ -20,8 +20,8 @@ import { GenericErrorPage } from "@/components/ui/generic-error-page";
 <GenericErrorPage
   variant="not-found"
   buttons={[
-    { label: "Voltar ao início", url: "/" },
-    { label: "Falar com o suporte", url: "/suporte", variant: "outline" },
+    { label: "Back to home", url: "/" },
+    { label: "Contact support", url: "/support", variant: "outline" },
   ]}
 />
 ```
@@ -31,8 +31,8 @@ All content and actions are optional. Omit `buttons` for a purely informative st
 ```tsx
 <GenericErrorPage
   variant="server-error"
-  title="Não foi possível carregar o relatório"
-  description="Seus dados estão seguros. Tente novamente em alguns minutos."
+  title="Could not load the report"
+  description="Your data is safe. Try again in a few minutes."
 />
 ```
 

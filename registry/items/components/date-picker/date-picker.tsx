@@ -1,6 +1,6 @@
 "use client";
 import { format } from "date-fns";
-import { ptBR } from "date-fns/locale";
+import { enUS } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -29,14 +29,14 @@ function DatePicker(props: DatePickerProps) {
   const isRange = props.type === "range";
   const isEmpty = isRange ? !props.value?.from : !props.value;
   const placeholder =
-    props.placeholder ?? (isRange ? "Selecione um intervalo de datas..." : "Selecione a data...");
+    props.placeholder ?? (isRange ? "Select a date range..." : "Select a date...");
   const formattedValue = (() => {
     if (isRange) {
       if (!props.value?.from) return null;
-      if (!props.value.to) return format(props.value.from, "dd/LL/y", { locale: ptBR });
-      return `${format(props.value.from, "dd/LL/y", { locale: ptBR })} – ${format(props.value.to, "dd/LL/y", { locale: ptBR })}`;
+      if (!props.value.to) return format(props.value.from, "LL/dd/y", { locale: enUS });
+      return `${format(props.value.from, "LL/dd/y", { locale: enUS })} – ${format(props.value.to, "LL/dd/y", { locale: enUS })}`;
     }
-    return props.value ? format(props.value, "PPP", { locale: ptBR }) : null;
+    return props.value ? format(props.value, "PPP", { locale: enUS }) : null;
   })();
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -61,7 +61,7 @@ function DatePicker(props: DatePickerProps) {
             selected={props.value}
             onSelect={props.onChange}
             numberOfMonths={2}
-            locale={ptBR}
+            locale={enUS}
           />
         ) : (
           <Calendar
@@ -74,7 +74,7 @@ function DatePicker(props: DatePickerProps) {
               props.onChange(date);
               setOpen(false);
             }}
-            locale={ptBR}
+            locale={enUS}
           />
         )}
       </PopoverContent>
