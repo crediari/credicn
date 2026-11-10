@@ -5,6 +5,7 @@ title: Select Popover
 description: Generic searchable select with custom item rendering, single or multiple selection, and bounded DOM output.
 dependencies:
   - lucide-react
+  - radix-ui
 registryDependencies:
   - button
   - command
@@ -31,12 +32,15 @@ import { SelectPopover } from "@/components/ui/select-popover";
   getItemLabel={(item) => item.name}
   getItemKeywords={(item) => [item.state]}
   resultLimit={50}
+  clearLabel="Todas as cidades"
 />
 ```
 
 `resultLimit` defaults to `100`. Only that many filtered items are mounted, keeping large datasets
 from creating an oversized DOM. A message asks the user to refine the search when more results are
-available.
+available. In single selection, `clearLabel` adds an option that resets the value to `null`.
+Use `triggerId` to associate a label and `portalContainer` to keep the popover inside a dialog
+or sheet when needed.
 
 ## Multiple selection and custom content
 

@@ -1,6 +1,7 @@
 "use client";
+
 import { format } from "date-fns";
-import { enUS } from "date-fns/locale";
+import { ptBR } from "date-fns/locale";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
@@ -10,6 +11,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 type DatePickerBaseProps = {
+  position?: "top" | "right" | "bottom" | "left";
   className?: string;
   placeholder?: string;
 };
@@ -29,14 +31,14 @@ function DatePicker(props: DatePickerProps) {
   const isRange = props.type === "range";
   const isEmpty = isRange ? !props.value?.from : !props.value;
   const placeholder =
-    props.placeholder ?? (isRange ? "Select a date range..." : "Select a date...");
+    props.placeholder ?? (isRange ? "Selecione um intervalo de datas..." : "Selecione a data...");
   const formattedValue = (() => {
     if (isRange) {
       if (!props.value?.from) return null;
-      if (!props.value.to) return format(props.value.from, "LL/dd/y", { locale: enUS });
-      return `${format(props.value.from, "LL/dd/y", { locale: enUS })} – ${format(props.value.to, "LL/dd/y", { locale: enUS })}`;
+      if (!props.value.to) return format(props.value.from, "dd/LL/y", { locale: ptBR });
+      return `${format(props.value.from, "dd/LL/y", { locale: ptBR })} – ${format(props.value.to, "dd/LL/y", { locale: ptBR })}`;
     }
-    return props.value ? format(props.value, "PPP", { locale: enUS }) : null;
+    return props.value ? format(props.value, "PPP", { locale: ptBR }) : null;
   })();
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -45,7 +47,7 @@ function DatePicker(props: DatePickerProps) {
           variant="outline"
           data-empty={isEmpty}
           className={cn(
-            "w-full justify-start text-left font-normal data-[empty=true]:text-muted-foreground",
+            "h-9.5 w-full justify-start border-0 bg-input/50 text-left font-normal data-[empty=true]:text-muted-foreground dark:bg-input/50",
             props.className,
           )}
         >
@@ -53,7 +55,7 @@ function DatePicker(props: DatePickerProps) {
           {formattedValue ?? <span>{placeholder}</span>}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-auto p-0" align="center">
+      <PopoverContent className="w-auto p-0" align="center" side={props.position}>
         {props.type === "range" ? (
           <Calendar
             mode="range"
@@ -61,7 +63,7 @@ function DatePicker(props: DatePickerProps) {
             selected={props.value}
             onSelect={props.onChange}
             numberOfMonths={2}
-            locale={enUS}
+            locale={ptBR}
           />
         ) : (
           <Calendar
@@ -74,7 +76,7 @@ function DatePicker(props: DatePickerProps) {
               props.onChange(date);
               setOpen(false);
             }}
-            locale={enUS}
+            locale={ptBR}
           />
         )}
       </PopoverContent>

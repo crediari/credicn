@@ -1,6 +1,8 @@
 "use client";
+
 import { ChevronDown, Loader2, SearchX, XCircle } from "lucide-react";
-import type { ReactNode } from "react";
+import { Popover as PopoverPrimitive } from "radix-ui";
+import type { ComponentProps, ReactNode } from "react";
 import { useId, useMemo, useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -11,6 +13,7 @@ type SelectPopoverItemState = {
   selected: boolean;
 };
 type SelectPopoverBaseProps<T> = {
+  portalContainer?: HTMLElement | null;
   items: readonly T[];
   getItemValue: (item: NoInfer<T>) => string | number;
   getItemLabel: (item: NoInfer<T>) => string;
@@ -35,6 +38,7 @@ type SelectPopoverBaseProps<T> = {
   onOpenChange?: (open: boolean) => void;
   className?: string;
   triggerClassName?: string;
+  triggerId?: string;
   contentClassName?: string;
   listClassName?: string;
 };
@@ -44,6 +48,7 @@ type SelectPopoverSingleProps<T> = SelectPopoverBaseProps<T> & {
   onValueChange: (value: NoInfer<T> | null) => void;
   renderValue?: (value: NoInfer<T>) => ReactNode;
   allowDeselect?: boolean;
+  clearLabel?: string;
   closeOnSelect?: boolean;
 };
 type SelectPopoverMultipleProps<T> = SelectPopoverBaseProps<T> & {
@@ -56,17 +61,18 @@ type SelectPopoverMultipleProps<T> = SelectPopoverBaseProps<T> & {
 type SelectPopoverProps<T> = SelectPopoverSingleProps<T> | SelectPopoverMultipleProps<T>;
 function SelectPopover<T>(props: SelectPopoverProps<T>) {
   const {
+    portalContainer,
     items,
     getItemValue,
     getItemLabel,
     getItemKeywords,
     renderItem,
     isItemDisabled,
-    placeholder = "Select...",
-    searchPlaceholder = "Search...",
-    emptyMessage = "No results found",
-    loadingMessage = "Searching...",
-    errorMessage = "Failed to load",
+    placeholder = "Selecionar...",
+    searchPlaceholder = "Pesquisar...",
+    emptyMessage = "Nenhum resultado encontrado",
+    loadingMessage = "Buscando...",
+    errorMessage = "Erro ao carregar",
     isLoading = false,
     isError = false,
     disabled = false,
@@ -80,6 +86,7 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
     onOpenChange,
     className,
     triggerClassName,
+    triggerId,
     contentClassName,
     listClassName,
   } = props;
@@ -149,7 +156,7 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
       if (props.value.length === 1) {
         return getItemLabel(props.value[0]);
       }
-      return `${props.value.length} selected`;
+      return `${props.value.length} selecionados`;
     }
     if (!props.value) {
       return <span className="text-muted-foreground">{placeholder}</span>;
@@ -162,10 +169,14 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
         <PopoverTrigger disabled={disabled} asChild>
           <Button
             variant="outline"
+            id={triggerId}
             role="combobox"
             aria-expanded={open}
             aria-controls={listId}
-            className={cn("w-full justify-between gap-2", triggerClassName)}
+            className={cn(
+              "h-10 w-full justify-between gap-2 border! border-transparent! bg-input/50 dark:bg-input/50",
+              triggerClassName,
+            )}
           >
             <div className="min-w-0 flex-1 truncate text-left">{renderSelectedValue()}</div>
             <ChevronDown
@@ -177,7 +188,10 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
           </Button>
         </PopoverTrigger>
 
-        <PopoverContent
+        <SelectPopoverContent
+          container={portalContainer}
+          onWheelCapture={(event) => event.stopPropagation()}
+          onTouchMoveCapture={(event) => event.stopPropagation()}
           align="start"
           className={cn("w-(--radix-popover-trigger-width) gap-0 p-0", contentClassName)}
         >
@@ -196,6 +210,20 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
               aria-multiselectable={props.multiple || undefined}
               className={cn("p-1", listClassName)}
             >
+              {!props.multiple && props.clearLabel && (
+                <CommandItem
+                  value="__clear_selection__"
+                  data-checked={props.value === null}
+                  aria-selected={props.value === null}
+                  onSelect={() => {
+                    props.onValueChange(null);
+                    handleOpenChange(false);
+                  }}
+                  className="min-h-10 py-2"
+                >
+                  {props.clearLabel}
+                </CommandItem>
+              )}
               {isLoading ? (
                 <SelectPopoverStatus icon={<Loader2 className="animate-spin" />}>
                   {loadingMessage}
@@ -203,7 +231,9 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
               ) : isError ? (
                 <SelectPopoverStatus icon={<XCircle />}>{errorMessage}</SelectPopoverStatus>
               ) : visibleItems.length === 0 ? (
-                <SelectPopoverStatus icon={<SearchX />}>{emptyMessage}</SelectPopoverStatus>
+                props.multiple || !props.clearLabel ? (
+                  <SelectPopoverStatus icon={<SearchX />}>{emptyMessage}</SelectPopoverStatus>
+                ) : null
               ) : (
                 visibleItems.map((item) => {
                   const itemValue = String(getItemValue(item));
@@ -231,16 +261,38 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
 
             {!isLoading && !isError && hiddenResultCount > 0 && (
               <div className="border-t px-3 py-2 text-xs text-muted-foreground">
-                Showing {visibleItems.length} of {filteredItems.length} results. Refine your search
-                to see more.
+                Mostrando {visibleItems.length} de {filteredItems.length} resultados. Refine a busca
+                para ver mais.
               </div>
             )}
           </Command>
-        </PopoverContent>
+        </SelectPopoverContent>
       </Popover>
     </div>
   );
 }
+function SelectPopoverContent({
+  container,
+  className,
+  ...props
+}: ComponentProps<typeof PopoverContent> & { container?: HTMLElement | null }) {
+  if (!container) return <PopoverContent className={className} {...props} />;
+
+  return (
+    <PopoverPrimitive.Portal container={container}>
+      <PopoverPrimitive.Content
+        data-slot="popover-content"
+        sideOffset={4}
+        className={cn(
+          "z-50 flex origin-(--radix-popover-content-transform-origin) flex-col rounded-3xl bg-popover text-sm text-popover-foreground shadow-lg ring-1 ring-foreground/5 outline-hidden duration-100 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 dark:ring-foreground/10 data-open:animate-in data-open:fade-in-0 data-open:zoom-in-95 data-closed:animate-out data-closed:fade-out-0 data-closed:zoom-out-95",
+          className,
+        )}
+        {...props}
+      />
+    </PopoverPrimitive.Portal>
+  );
+}
+
 function SelectPopoverStatus({ icon, children }: { icon: ReactNode; children: ReactNode }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 px-4 py-8 text-center text-sm text-muted-foreground">
