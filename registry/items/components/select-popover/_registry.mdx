@@ -4,10 +4,10 @@ type: registry:component
 title: Select Popover
 description: Generic searchable select with custom item rendering, single or multiple selection, and bounded DOM output.
 dependencies:
+  - cmdk
   - lucide-react
   - radix-ui
 registryDependencies:
-  - button
   - command
   - popover
 files:
@@ -69,3 +69,7 @@ or sheet when needed.
 Multiple selection keeps the popover open by default so several items can be toggled. Use
 `closeOnSelect` to change that behavior. For server-side search, control `searchValue`, handle
 `onSearchValueChange`, and set `shouldFilter={false}`.
+
+The trigger uses the same `bg-input/50`, transparent border, and focus ring as the current shadcn inputs.
+Options follow Luma spacing and rounding. Keyboard focus uses `data-selected="true"`;
+`data-checked` separately marks the chosen values, including multiple selection.

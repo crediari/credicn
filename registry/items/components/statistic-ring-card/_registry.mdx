@@ -1,0 +1,40 @@
+---
+name: statistic-ring-card
+type: registry:ui
+title: Statistic Ring Card
+description: Concentric progress rings for comparing multiple goals in one KPI card.
+dependencies:
+  - recharts@3.8.0
+registryDependencies:
+  - chart
+localRegistryDependencies:
+  - statistic-card
+---
+
+Compare independent goals with Recharts radial bars. Each item has a stable `id`, `label`,
+`current`, `target`, and optional CSS `color`. The rings use the host's `--chart-*` colors by default.
+The goals are independent percentages and do not need to add up to 100%.
+
+```tsx
+import { StatisticRingCard } from '@/components/ui/statistic-ring-card';
+
+<StatisticRingCard
+  title="Visão geral de vendas"
+  description="Últimos 7 dias"
+  showScale
+  data={[
+    { id: 'sales', label: 'Vendas', current: 48, target: 100 },
+    { id: 'orders', label: 'Pedidos', current: 74, target: 100 },
+    { id: 'conversion', label: 'Conversão', current: 26, target: 100 },
+  ]}
+/>
+```
+
+`showScale` adds 0%, 25%, 50% and 75% markers. `showLegend={false}` creates the minimal chart-only
+layout while retaining accessible goal meters. With a visible legend, each category includes its
+percentage. `formatValue` formats the current and target values reported to assistive technology.
+The optional `value`, all three `layout` options and the regular card footer are available.
+
+Rings fill clockwise from the top and stop at 100%; the legend can show an exceeded goal such as
+128%. Items with invalid targets or non-finite values are omitted. If no valid goals remain,
+`emptyMessage` replaces the chart. Use unique IDs and keep item order stable across updates.

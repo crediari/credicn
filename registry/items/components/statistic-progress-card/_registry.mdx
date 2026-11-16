@@ -1,0 +1,41 @@
+---
+name: statistic-progress-card
+type: registry:ui
+title: Statistic Progress Card
+description: A horizontal KPI goal with achieved and target values, plus space for supporting content.
+dependencies:
+  - recharts@3.8.0
+registryDependencies:
+  - chart
+localRegistryDependencies:
+  - statistic-card
+---
+
+Use this card for deals, campaign usage, budgets and completion goals. The indicator is a Recharts
+bar inside the official shadcn ChartContainer. Pass `current` and `target` in the same unit.
+
+```tsx
+import { StatisticProgressCard } from '@/components/ui/statistic-progress-card';
+
+<StatisticProgressCard
+  title="Último negócio"
+  description="Últimos 7 dias"
+  layout="inline"
+  current={98500}
+  target={122900}
+  currentLabel="Realizado"
+  targetLabel="Objetivo"
+  formatValue={(value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+  color="var(--chart-2)"
+>
+  <p className="text-xs text-muted-foreground">Cupons usados: 18/22</p>
+</StatisticProgressCard>
+```
+
+The default headline is the computed percentage; override `value` when a currency, count or custom
+label is more useful. `children` supports extra information such as an avatar group, coupon usage
+or a secondary action. All Statistic Card layouts, trends, icons and footers are supported.
+
+The bar clamps to 0–100%, while the percentage text can exceed 100%. Invalid targets or non-finite
+current values display `emptyMessage`. The accessible meter reports the computed progress.
+`color` defaults to `var(--chart-1)`; prefer semantic tokens from the host theme.

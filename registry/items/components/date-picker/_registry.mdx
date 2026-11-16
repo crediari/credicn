@@ -7,7 +7,6 @@ dependencies:
   - date-fns
   - lucide-react
 registryDependencies:
-  - button
   - calendar
   - popover
 files:
@@ -33,3 +32,5 @@ const [period, setPeriod] = useState<DateRange | undefined>();
 
 <DatePicker type="range" value={period} onChange={setPeriod} />
 ```
+
+The trigger uses the same `bg-input/50`, transparent border, and focus ring as the current shadcn inputs.

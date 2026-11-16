@@ -6,7 +6,6 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { useState } from "react";
 import type { DateRange } from "react-day-picker";
 
-import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -43,17 +42,17 @@ function DatePicker(props: DatePickerProps) {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button
-          variant="outline"
+        <button
+          type="button"
           data-empty={isEmpty}
           className={cn(
-            "h-9.5 w-full justify-start border-0 bg-input/50 text-left font-normal data-[empty=true]:text-muted-foreground dark:bg-input/50",
+            "flex h-9 w-full min-w-0 items-center justify-start gap-2 rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-left text-sm font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 data-[empty=true]:text-muted-foreground [&_svg]:size-4 [&_svg]:shrink-0",
             props.className,
           )}
         >
           <CalendarIcon />
           {formattedValue ?? <span>{placeholder}</span>}
-        </Button>
+        </button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0" align="center" side={props.position}>
         {props.type === "range" ? (

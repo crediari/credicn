@@ -1,12 +1,12 @@
 "use client";
 
-import { ChevronDown, Loader2, SearchX, XCircle } from "lucide-react";
+import { Command as CommandPrimitive } from "cmdk";
+import { Check, ChevronDown, Loader2, SearchX, XCircle } from "lucide-react";
 import { Popover as PopoverPrimitive } from "radix-ui";
 import type { ComponentProps, ReactNode } from "react";
 import { useId, useMemo, useState } from "react";
 
-import { Button } from "@/components/ui/button";
-import { Command, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
+import { Command, CommandInput, CommandList } from "@/components/ui/command";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 type SelectPopoverItemState = {
@@ -167,14 +167,14 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
     <div className={cn("w-full", className)}>
       <Popover open={open} onOpenChange={handleOpenChange}>
         <PopoverTrigger disabled={disabled} asChild>
-          <Button
-            variant="outline"
+          <button
+            type="button"
             id={triggerId}
             role="combobox"
             aria-expanded={open}
             aria-controls={listId}
             className={cn(
-              "h-10 w-full justify-between gap-2 border! border-transparent! bg-input/50 dark:bg-input/50",
+              "flex h-9 w-full min-w-0 items-center justify-between gap-1.5 rounded-3xl border border-transparent bg-input/50 px-3 py-2 text-sm font-normal text-foreground transition-[color,box-shadow,background-color] outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/30 disabled:cursor-not-allowed disabled:opacity-50",
               triggerClassName,
             )}
           >
@@ -185,7 +185,7 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
                 open && "rotate-180",
               )}
             />
-          </Button>
+          </button>
         </PopoverTrigger>
 
         <SelectPopoverContent
@@ -195,7 +195,7 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
           align="start"
           className={cn("w-(--radix-popover-trigger-width) gap-0 p-0", contentClassName)}
         >
-          <Command shouldFilter={false}>
+          <Command shouldFilter={false} className="rounded-3xl p-0">
             {searchable && (
               <CommandInput
                 aria-label={searchPlaceholder}
@@ -208,21 +208,19 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
             <CommandList
               id={listId}
               aria-multiselectable={props.multiple || undefined}
-              className={cn("p-1", listClassName)}
+              className={cn("p-1.5", listClassName)}
             >
               {!props.multiple && props.clearLabel && (
-                <CommandItem
+                <SelectPopoverOption
                   value="__clear_selection__"
                   data-checked={props.value === null}
-                  aria-selected={props.value === null}
                   onSelect={() => {
                     props.onValueChange(null);
                     handleOpenChange(false);
                   }}
-                  className="min-h-10 py-2"
                 >
                   {props.clearLabel}
-                </CommandItem>
+                </SelectPopoverOption>
               )}
               {isLoading ? (
                 <SelectPopoverStatus icon={<Loader2 className="animate-spin" />}>
@@ -239,21 +237,19 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
                   const itemValue = String(getItemValue(item));
                   const isSelected = selectedValues.has(itemValue);
                   return (
-                    <CommandItem
+                    <SelectPopoverOption
                       key={itemValue}
                       value={itemValue}
                       disabled={isItemDisabled?.(item)}
                       data-checked={isSelected}
-                      aria-selected={isSelected}
                       onSelect={() => handleItemSelect(item)}
-                      className="min-h-10 py-2"
                     >
                       <div className="min-w-0 flex-1">
                         {renderItem
                           ? renderItem(item, { selected: isSelected })
                           : getItemLabel(item)}
                       </div>
-                    </CommandItem>
+                    </SelectPopoverOption>
                   );
                 })
               )}
@@ -271,6 +267,29 @@ function SelectPopover<T>(props: SelectPopoverProps<T>) {
     </div>
   );
 }
+function SelectPopoverOption({
+  className,
+  children,
+  ...props
+}: ComponentProps<typeof CommandPrimitive.Item>) {
+  return (
+    <CommandPrimitive.Item
+      data-slot="command-item"
+      className={cn(
+        "group/option relative flex cursor-default items-center gap-2 rounded-2xl px-3 py-2 text-sm font-medium outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-muted data-[selected=true]:text-foreground [&_svg]:pointer-events-none [&_svg]:shrink-0",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+      <Check
+        aria-hidden="true"
+        className="ml-auto size-4 shrink-0 opacity-0 group-data-[checked=true]/option:opacity-100"
+      />
+    </CommandPrimitive.Item>
+  );
+}
+
 function SelectPopoverContent({
   container,
   className,

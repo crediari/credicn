@@ -1,0 +1,45 @@
+---
+name: statistic-card
+type: registry:ui
+title: Statistic Card
+description: A compact KPI card with an icon, value, trend badge and optional footer.
+dependencies:
+  - lucide-react
+registryDependencies:
+  - badge
+  - card
+---
+
+Display any formatted KPI through `value`. The card inherits the host shadcn theme. Pass an
+`icon`, `description`, `footer`, or `children` to compose a dashboard without coupling the card
+to an API, router, or number format. Use a responsive grid in the consuming app.
+
+```tsx
+import { Wallet } from 'lucide-react';
+import { StatisticCard } from '@/components/ui/statistic-card';
+
+<StatisticCard
+  title="Receita total"
+  description="Novembro de 2026"
+  value="R$ 48.520,00"
+  icon={<Wallet />}
+  trend={{ label: '+12,8%', direction: 'up', tone: 'positive', description: 'vs. mês anterior' }}
+  footer="Atualizado há 5 minutos"
+/>
+```
+
+`trend.direction` selects the arrow (`up`, `down`, `flat`); `trend.tone` selects the meaning
+(`positive`, `negative`, `neutral`). These are independent: falling expenses can be positive,
+and rising cancellations can be negative. Positive pairs `primary` with `primary-foreground`, negative uses `destructive`,
+and neutral uses the secondary badge. Labels and arrows communicate the change alongside color.
+
+The chart, goal and breakdown variants depend on this card and install it automatically.
+
+## Layout variations
+
+`layout="default"` keeps the large value below the title. `layout="compact"` uses a smaller card,
+tighter spacing and a smaller value. `layout="inline"` puts the metric and trend at the right of
+the title, leaving the card body available for charts or custom content. `value` is optional,
+which supports cards with a title and a chart only. Existing calls retain the default layout.
+
+The preview includes eight examples covering all layouts and positive, negative and neutral trends.

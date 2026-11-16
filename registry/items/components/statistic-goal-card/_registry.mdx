@@ -1,0 +1,41 @@
+---
+name: statistic-goal-card
+type: registry:ui
+title: Statistic Goal Card
+description: A KPI goal with radial progress, current value and a target summary.
+dependencies:
+  - recharts@3.8.0
+registryDependencies:
+  - chart
+localRegistryDependencies:
+  - statistic-card
+---
+
+A Recharts radial indicator composed with Statistic Card. Pass `current` and `target` in the same
+unit. The percentage is calculated from those numbers; the ring stops at 100% while the displayed
+percentage can exceed 100%. Negative progress is shown as zero.
+
+```tsx
+import { StatisticGoalCard } from '@/components/ui/statistic-goal-card';
+
+<StatisticGoalCard
+  title="Meta de recuperação"
+  description="Novembro de 2026"
+  current={74500}
+  target={100000}
+  targetLabel="Meta mensal"
+  formatValue={(value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}
+  footer="Faltam 14 dias para fechar o período"
+/>
+```
+
+The current value uses `formatValue` unless `value` is supplied. The ring uses `--chart-1` and
+exposes an accessible meter with percentage text. A zero, negative or non-finite target (or a
+non-finite current value) displays `emptyMessage` instead of an invalid percentage.
+
+## Layouts and colors
+
+The preview includes four goal compositions: monetary recovery, an exceeded count goal, a compact
+satisfaction tile, and an inline onboarding widget. Use `layout="compact"` or `layout="inline"`
+for the alternate compositions. `color` customizes the ring through a CSS color or semantic token
+such as `var(--chart-2)`. The default remains `var(--chart-1)`.

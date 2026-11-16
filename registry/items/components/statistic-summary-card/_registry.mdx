@@ -1,0 +1,31 @@
+---
+name: statistic-summary-card
+type: registry:ui
+title: Statistic Summary Card
+description: A responsive KPI strip with values, icons and trend indicators.
+registryDependencies:
+  - card
+localRegistryDependencies:
+  - statistic-card
+---
+
+Group related metrics in one divided card. Each item has a stable `id` and accepts Statistic Card's
+`title`, `value`, `description`, `icon` and `trend`. Set `columns` to 2, 3 or 4 (the default).
+The strip collapses on narrow screens.
+
+```tsx
+import { StatisticSummaryCard } from '@/components/ui/statistic-summary-card';
+
+<StatisticSummaryCard
+  columns={3}
+  aria-label="Resumo comercial"
+  items={[
+    { id: 'orders', title: 'Pedidos', value: '1.286', trend: { label: '+12,8%', direction: 'up', tone: 'positive' } },
+    { id: 'sales', title: 'Vendas', value: 'R$ 48.520' },
+    { id: 'profit', title: 'Lucro', value: 'R$ 18.940' },
+  ]}
+/>
+```
+
+The component has no chart or data-fetching dependency. Format metric values in the consumer,
+and connect them to the app's existing backend. All colors inherit the host shadcn theme.

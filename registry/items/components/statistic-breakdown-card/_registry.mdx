@@ -1,0 +1,60 @@
+---
+name: statistic-breakdown-card
+type: registry:ui
+title: Statistic Breakdown Card
+description: A KPI distribution with a donut chart, category values and percentage shares.
+dependencies:
+  - recharts@3.8.0
+registryDependencies:
+  - chart
+localRegistryDependencies:
+  - statistic-card
+---
+
+A Recharts donut with a visible category legend. Each item contains `label`, numeric `value`, and
+an optional CSS `color`. By default, the chart cycles through the host's five `--chart-*` tokens.
+Keep category order stable for consistent colors, or provide explicit semantic token colors.
+
+```tsx
+import { StatisticBreakdownCard } from '@/components/ui/statistic-breakdown-card';
+
+<StatisticBreakdownCard
+  title="Receita por canal"
+  description="Distribuição no mês"
+  centerLabel="Canais"
+  data={[
+    { label: 'Filiais', value: 28500 },
+    { label: 'Digital', value: 14200 },
+    { label: 'Parceiros', value: 5820 },
+  ]}
+  formatValue={(value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL', maximumFractionDigits: 0 })}
+/>
+```
+
+The headline defaults to the sum; `value` can override its display. `formatValue` is shared by
+the headline, legend and tooltip. Percentages always use the numeric sum. Negative and non-finite
+values are treated as zero. An empty or all-zero dataset displays `emptyMessage`. The legend
+keeps the exact values and percentages available without relying on chart colors or hover.
+
+## Segmented distribution and compact donuts
+
+`variant="stacked"` replaces the donut with a horizontal segmented Recharts bar. Each legend row
+shows the category, value and percentage with separators, useful for assets and revenue allocation.
+The numeric sum still drives the segment widths even when `value` overrides the headline.
+
+Use `showLegend={false}` for a compact donut, and combine `layout="compact"` or `layout="inline"`
+with the standard card props. Hidden legends remain available to screen readers.
+The preview includes full donuts, compact tiles, inline product widgets and segmented distributions.
+
+```tsx
+<StatisticBreakdownCard
+  title="Ativos totais"
+  variant="stacked"
+  data={[
+    { label: 'Produtos', value: 312500.45 },
+    { label: 'Serviços', value: 125000.25 },
+    { label: 'Outras receitas', value: 40730.2 },
+  ]}
+  formatValue={(value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+/>
+```

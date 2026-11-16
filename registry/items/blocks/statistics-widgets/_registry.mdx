@@ -1,0 +1,32 @@
+---
+name: statistics-widgets
+type: registry:block
+title: Statistics Widgets
+description: A dashboard row combining customer trends, products, deal progress and stacked payment bars.
+localRegistryDependencies:
+  - statistic-chart-card
+  - statistic-breakdown-card
+  - statistic-progress-card
+files:
+  - path: statistics-widgets.tsx
+    type: registry:block
+---
+
+A composed dashboard section inspired by the statistics references. It combines four independent
+cards: a customer sparkline, a product donut, horizontal deal progress and stacked payment bars.
+The preview shows the widgets side by side; the grid adapts to its available width.
+
+```tsx
+import { StatisticsWidgets } from '@/components/statistics-widgets';
+
+<StatisticsWidgets
+  customers={{ title: 'Clientes', value: '6.380', data: customerSeries }}
+  products={{ title: 'Produtos', value: '12.389', data: productCategories }}
+  deal={{ title: 'Último negócio', current: 98500, target: 122900 }}
+  payments={{ title: 'Pagamentos', value: '12.389', data: paymentSeries, valueLabel: 'Pix', comparisonLabel: 'Cartão' }}
+/>
+```
+
+Each prop accepts the full corresponding card props, so labels, metrics, colors, formatting, trends,
+footers and supporting content can be customized. All data comes from props; only the authoring
+preview supplies sample data. Charts use Recharts with the official shadcn ChartContainer.

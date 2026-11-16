@@ -1,0 +1,71 @@
+---
+name: statistic-chart-card
+type: registry:ui
+title: Statistic Chart Card
+description: KPI trends with area, line or bar charts and optional comparison series.
+dependencies:
+  - recharts@3.8.0
+registryDependencies:
+  - chart
+localRegistryDependencies:
+  - statistic-card
+---
+
+Built with Recharts and the official shadcn `ChartContainer`, tooltip and legend. Accepts all
+Statistic Card props plus `data` and `chartType` (`area`, `line`, `bar`). Each point has a `label`,
+a numeric `value`, and an optional numeric `comparison`. Keep points ordered by period and pass
+finite numbers. An absent comparison remains a gap rather than a fabricated zero.
+
+```tsx
+import { StatisticChartCard } from '@/components/ui/statistic-chart-card';
+
+<StatisticChartCard
+  title="Receita mensal"
+  value="R$ 48.520"
+  description="Últimos seis meses"
+  chartType="area"
+  valueLabel="Receita"
+  data={[
+    { label: 'Jun', value: 28000 },
+    { label: 'Jul', value: 34000 },
+    { label: 'Ago', value: 31000 },
+    { label: 'Set', value: 39000 },
+    { label: 'Out', value: 43000 },
+    { label: 'Nov', value: 48520 },
+  ]}
+  formatValue={(value) => value.toLocaleString('pt-BR', { style: 'currency', currency: 'BRL' })}
+  trend={{ label: '+12,8%', direction: 'up', tone: 'positive', description: 'vs. mês anterior' }}
+/>
+```
+
+Add `comparison` to points and customize `comparisonLabel` for a second series and automatic legend.
+`formatValue` formats tooltip numbers; `value` is independently formatted by the consumer. Colors
+use `--chart-1` and `--chart-2`. Each area instance gets unique gradient IDs, so cards can repeat
+on the same dashboard. Empty arrays display `emptyMessage` instead of a chart. Charts expose the
+Recharts accessibility layer, including keyboard navigation. Tooltips use the same format in all variants.
+
+## Sparklines and stacked bars
+
+Use `chartStyle="sparkline"` for a compact 96px chart without axes or grid lines. Combine it with
+`layout="compact"` for small indicator tiles, or `layout="inline"` for a dashboard widget with
+the value in the header. `color` and `comparisonColor` accept CSS colors and default to chart tokens.
+`showLegend` overrides the default legend behavior (visible for comparison charts except sparklines).
+
+For payment methods or other additive categories, set `chartType="bar" stacked`. The `value` and
+`comparison` series are stacked; for previous-period comparisons, keep the default grouped bars.
+The preview includes area, line, bar, compact-sparkline and stacked-bar compositions.
+
+```tsx
+<StatisticChartCard
+  title="Pagamentos"
+  value="12.389"
+  layout="inline"
+  chartStyle="sparkline"
+  chartType="bar"
+  stacked
+  showLegend
+  valueLabel="Pix"
+  comparisonLabel="Cartão"
+  data={[{ label: 'Seg', value: 52, comparison: 48 }, { label: 'Ter', value: 65, comparison: 35 }]}
+/>
+```
